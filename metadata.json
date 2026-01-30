@@ -1,0 +1,7 @@
+{
+  "name": "EduNexus SaaS",
+  "description": "A scalable multi-school education management platform with AI-powered lesson planning and analytics.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
