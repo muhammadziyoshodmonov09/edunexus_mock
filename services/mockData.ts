@@ -1,8 +1,8 @@
 import { User, UserRole, School, Course, Lesson, Assignment, Certificate, AttendanceRecord, Notification, StatMetric, Submission, QuizQuestion, AuditLog, Invoice, GradeBookEntry } from '../types';
 
 export const SCHOOLS: School[] = [
-  { id: 's1', name: 'Lincoln High', plan: 'ENTERPRISE', studentCount: 1250, teacherCount: 85, logo: 'https://picsum.photos/id/1/200', status: 'ACTIVE', joinedDate: '2022-08-15', revenue: 2500 },
-  { id: 's2', name: 'Tech Academy', plan: 'PRO', studentCount: 450, teacherCount: 30, logo: 'https://picsum.photos/id/2/200', status: 'ACTIVE', joinedDate: '2023-01-10', revenue: 950 },
+  { id: 's1', name: 'Lincoln High', plan: 'ENTERPRISE', studentCount: 1250, teacherCount: 85, logo: 'https://picsum.photos/id/1/200', status: 'ACTIVE', joinedDate: '2024-08-15', revenue: 2500 },
+  { id: 's2', name: 'Tech Academy', plan: 'PRO', studentCount: 450, teacherCount: 30, logo: 'https://picsum.photos/id/2/200', status: 'ACTIVE', joinedDate: '2025-01-10', revenue: 950 },
 ];
 
 export const USERS: User[] = [
@@ -36,12 +36,12 @@ export const LESSONS: Lesson[] = [
 ];
 
 export const ASSIGNMENTS: Assignment[] = [
-  { id: 'a1', courseId: 'c1', title: 'Kalkulyus Masalalari 1', dueDate: '2023-11-15', status: 'GRADED', grade: 92, maxGrade: 100, description: '...' },
-  { id: 'a2', courseId: 'c2', title: 'Tarix Inshosi: Rim Imperiyasi', dueDate: '2023-11-20', status: 'PENDING', maxGrade: 100, description: '...' },
+  { id: 'a1', courseId: 'c1', title: 'Kalkulyus Masalalari 1', dueDate: '2026-11-15', status: 'GRADED', grade: 92, maxGrade: 100, description: '...' },
+  { id: 'a2', courseId: 'c2', title: 'Tarix Inshosi: Rim Imperiyasi', dueDate: '2026-11-20', status: 'PENDING', maxGrade: 100, description: '...' },
 ];
 
 export const SUBMISSIONS: Submission[] = [
-  { id: 'sub1', assignmentId: 'a2', studentId: 'u1', studentName: 'Aziza Talaba', submittedDate: '2023-11-19', content: '...', status: 'SUBMITTED' },
+  { id: 'sub1', assignmentId: 'a2', studentId: 'u1', studentName: 'Aziza Talaba', submittedDate: '2026-11-19', content: '...', status: 'SUBMITTED' },
 ];
 
 export const NOTIFICATIONS: Notification[] = [
@@ -50,20 +50,20 @@ export const NOTIFICATIONS: Notification[] = [
 ];
 
 export const CERTIFICATES: Certificate[] = [
-  { id: 'cert1', title: 'Algebra Ustasi', issueDate: '2023-05-20', courseName: 'O\'rta Algebra', url: '#' },
+  { id: 'cert1', title: 'Algebra Ustasi', issueDate: '2026-05-20', courseName: 'O\'rta Algebra', url: '#' },
 ];
 
 export const ATTENDANCE: AttendanceRecord[] = [
-  { id: 'at1', date: '2023-11-14', status: 'PRESENT', courseId: 'c1', courseName: 'Oliy Matematika' },
-  { id: 'at2', date: '2023-11-13', status: 'PRESENT', courseId: 'c1', courseName: 'Oliy Matematika' },
+  { id: 'at1', date: '2026-11-14', status: 'PRESENT', courseId: 'c1', courseName: 'Oliy Matematika' },
+  { id: 'at2', date: '2026-11-13', status: 'PRESENT', courseId: 'c1', courseName: 'Oliy Matematika' },
 ];
 
 export const AUDIT_LOGS: AuditLog[] = [
-  { id: 'log1', action: 'Foydalanuvchi Kirishi', actorName: 'Dr. Karter', target: 'Tizim', timestamp: '2023-11-20 08:30:00', schoolId: 's1', type: 'SECURITY' },
+  { id: 'log1', action: 'Foydalanuvchi Kirishi', actorName: 'Dr. Karter', target: 'Tizim', timestamp: '2026-11-20 08:30:00', schoolId: 's1', type: 'SECURITY' },
 ];
 
 export const INVOICES: Invoice[] = [
-  { id: 'inv-001', schoolId: 's1', date: '2023-11-01', amount: 2500, status: 'PAID', plan: 'Enterprise Rejasi' },
+  { id: 'inv-001', schoolId: 's1', date: '2026-11-01', amount: 2500, status: 'PAID', plan: 'Enterprise Rejasi' },
 ];
 
 // New: Mock Gradebook for Student (100 point system)

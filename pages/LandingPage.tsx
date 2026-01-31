@@ -3,9 +3,25 @@ import { useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform, useMotionValue } from 'framer-motion';
 import { 
   School, ArrowRight, BarChart3, 
-  BrainCircuit, Globe, Play, Sun, Moon, Star, Atom, Calculator, Dna, Microscope, Shield
+  BrainCircuit, Globe, Play, Sun, Moon, Star, Atom, Calculator, Dna, Microscope, Shield, Instagram
 } from 'lucide-react';
 import { User } from '../types';
+
+// --- Custom Icons ---
+const TelegramIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.863 1.09c-.292.116-.691.359-.691.756 0 .394.481.547.809.643l1.833.535c.78.228 1.488.595 2.103 1.107l.006.005c.895.748 1.522 1.77 1.773 2.92.052.237.106.52.17 1.05.023.187.047.387.072.593.037.31.076.627.116.942.067.534.134 1.065.176 1.343.032.213.197.359.395.344.2-.016.347-.184.453-.33l.008-.01c.219-.31.428-.62.628-.934l1.37-2.114a4.136 4.136 0 0 1 1.069-1.09l.668-.466c.86-.6 1.84-1.01 2.87-1.2 1.93-.35 3.36-1.57 3.8-3.47.66-2.86 1.3-5.74 1.93-8.61.16-.73-.55-1.39-1.25-1.09z" />
+    <path d="M10.5 10.5l4.5-4.5" />
+  </svg>
+);
+
+const DiscordIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M9 12a1 1 0 1 0 2 0 1 1 0 1 0-2 0" />
+    <path d="M13 12a1 1 0 1 0 2 0 1 1 0 1 0-2 0" />
+    <path d="M18.92 5.126C18.92 5.126 16.76 3.018 13.55 3.018C13.55 3.018 11.43 3.018 9.079 5.126C9.079 5.126 3.018 13.98 3.018 20.98C3.018 20.98 5.625 21.03 8.356 19.33C8.356 19.33 8.825 18.25 9.079 17.51C9.079 17.51 7.218 16.89 6.456 16.03C6.456 16.03 6.64 15.93 6.784 15.86C9.916 17.37 13.71 17.47 17.15 15.86C17.29 15.93 17.47 16.03 17.47 16.03C16.71 16.89 14.85 17.51 14.85 17.51C15.11 18.25 15.57 19.33 15.57 19.33C18.3 21.03 20.91 20.98 20.91 20.98C20.91 13.98 14.85 5.126 14.85 5.126C12.5 3.018 10.38 3.018 10.38 3.018C7.168 3.018 5.009 5.126 5.009 5.126" />
+  </svg>
+);
 
 // --- Components ---
 
@@ -411,21 +427,63 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
 
       {/* --- FOOTER --- */}
       <footer className={`py-12 px-6 border-t ${isDarkMode ? 'border-white/5 bg-[#050505]' : 'border-slate-100 bg-white'}`}>
-         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-               <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white'}`}>
-                  <School className="w-5 h-5" />
-               </div>
-               <span className="font-bold text-lg">EduNexus</span>
-            </div>
-            <div className={`text-sm font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-               © 2024 EduNexus Inc. Barcha huquqlar himoyalangan.
-            </div>
-            <div className="flex gap-8">
-               <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Xavfsizlik</a>
-               <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Yordam</a>
-               <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Aloqa</a>
-            </div>
+         <div className="max-w-7xl mx-auto">
+           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
+              <div className="flex items-center gap-2">
+                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white'}`}>
+                    <School className="w-5 h-5" />
+                 </div>
+                 <span className="font-bold text-lg">EduNexus</span>
+              </div>
+              
+              <div className="flex gap-8">
+                 <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Xavfsizlik</a>
+                 <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Yordam</a>
+                 <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Aloqa</a>
+              </div>
+           </div>
+
+           {/* --- Developer Credits Section --- */}
+           <div className={`pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-6 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
+              <div className={`text-sm font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                 © 2026 EduNexus Inc. Barcha huquqlar himoyalangan.
+              </div>
+              
+              <div className="flex items-center gap-6">
+                 <span className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500">
+                    Dev: Muhammadziyo
+                 </span>
+                 <div className="flex gap-4">
+                    <a 
+                      href="https://t.me/muhammadziyo_dev" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className={`p-2 rounded-lg transition-all hover:scale-110 ${isDarkMode ? 'hover:bg-blue-500/20 text-slate-400 hover:text-blue-400' : 'hover:bg-blue-50 text-slate-400 hover:text-blue-500'}`}
+                      title="Telegram"
+                    >
+                       <TelegramIcon className="w-5 h-5" />
+                    </a>
+                    <a 
+                      href="https://www.instagram.com/muhammadziyo.life" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className={`p-2 rounded-lg transition-all hover:scale-110 ${isDarkMode ? 'hover:bg-pink-500/20 text-slate-400 hover:text-pink-400' : 'hover:bg-pink-50 text-slate-400 hover:text-pink-500'}`}
+                      title="Instagram"
+                    >
+                       <Instagram className="w-5 h-5" />
+                    </a>
+                    <a 
+                      href="https://discord.com/users/muhammadziyo_dev" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className={`p-2 rounded-lg transition-all hover:scale-110 ${isDarkMode ? 'hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-500'}`}
+                      title="Discord"
+                    >
+                       <DiscordIcon className="w-5 h-5" />
+                    </a>
+                 </div>
+              </div>
+           </div>
          </div>
       </footer>
     </div>

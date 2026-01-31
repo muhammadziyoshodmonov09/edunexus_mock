@@ -84,7 +84,7 @@ const DirectorSettings: React.FC<{ user: User }> = ({ user }) => {
                  <div>
                     <p className="text-slate-400 text-sm font-medium uppercase tracking-wider mb-1">Current Plan</p>
                     <h3 className="text-3xl font-bold mb-2">{currentSchool.plan} Plan</h3>
-                    <p className="text-slate-300 text-sm">Next billing date: December 1, 2023</p>
+                    <p className="text-slate-300 text-sm">Next billing date: December 1, 2026</p>
                  </div>
                  <div className="text-right">
                     <p className="text-3xl font-bold mb-2">$2,500<span className="text-lg text-slate-400 font-normal">/mo</span></p>
