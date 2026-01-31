@@ -1,75 +1,14 @@
 /**
  * DATABASE SCHEMA REFERENCE (MVP)
- * 
- * SCHOOLS TABLE
- * - id: UUID (PK)
- * - name: VARCHAR
- * - plan: ENUM('BASIC', 'PRO', 'ENTERPRISE')
- * - status: ENUM('ACTIVE', 'INACTIVE')
- * - logo_url: VARCHAR
- * - settings: JSON (theme, features)
- * - created_at: TIMESTAMP
- * 
- * USERS TABLE
- * - id: UUID (PK)
- * - email: VARCHAR (Unique)
- * - password_hash: VARCHAR
- * - role: ENUM('STUDENT', 'TEACHER', 'DIRECTOR', 'ADMIN')
- * - school_id: UUID (FK -> SCHOOLS.id)
- * - name: VARCHAR
- * - avatar_url: VARCHAR
- * - status: ENUM('ACTIVE', 'PENDING', 'SUSPENDED')
- * - last_login: TIMESTAMP
- * 
- * COURSES TABLE
- * - id: UUID (PK)
- * - school_id: UUID (FK -> SCHOOLS.id)
- * - teacher_id: UUID (FK -> USERS.id)
- * - title: VARCHAR
- * - description: TEXT
- * - thumbnail_url: VARCHAR
- * - invite_code: VARCHAR
- * 
- * LESSONS TABLE
- * - id: UUID (PK)
- * - course_id: UUID (FK -> COURSES.id)
- * - title: VARCHAR
- * - type: ENUM('VIDEO', 'TEXT', 'QUIZ')
- * - content: TEXT (Markdown)
- * - video_url: VARCHAR
- * - sort_order: INT
- * 
- * ASSIGNMENTS TABLE
- * - id: UUID (PK)
- * - course_id: UUID (FK -> COURSES.id)
- * - title: VARCHAR
- * - due_date: TIMESTAMP
- * - max_score: INT
- * 
- * SUBMISSIONS TABLE
- * - id: UUID (PK)
- * - assignment_id: UUID (FK -> ASSIGNMENTS.id)
- * - student_id: UUID (FK -> USERS.id)
- * - content: TEXT
- * - attachment_url: VARCHAR
- * - grade: INT
- * - feedback: TEXT
- * - submitted_at: TIMESTAMP
- * 
- * AUDIT_LOGS TABLE
- * - id: UUID (PK)
- * - school_id: UUID (FK -> SCHOOLS.id)
- * - actor_id: UUID (FK -> USERS.id)
- * - action: VARCHAR
- * - target_resource: VARCHAR
- * - created_at: TIMESTAMP
+ * ... (existing comments)
  */
 
 export enum UserRole {
   STUDENT = 'STUDENT',
   TEACHER = 'TEACHER',
   DIRECTOR = 'DIRECTOR',
-  ADMIN = 'ADMIN'
+  ADMIN = 'ADMIN',
+  PARENT = 'PARENT' // Added Parent Role
 }
 
 export interface User {
@@ -81,6 +20,7 @@ export interface User {
   avatarUrl?: string;
   status?: 'ACTIVE' | 'PENDING' | 'SUSPENDED'; 
   lastActive?: string;
+  childrenIds?: string[]; // For Parents
 }
 
 export interface School {
@@ -106,7 +46,11 @@ export interface Course {
   totalLessons?: number;
   completedLessons?: number;
   averageGrade?: number;
-  inviteCode?: string; // New for invite flow
+  inviteCode?: string;
+  isPaid?: boolean; // New: Paid course flag
+  price?: number; // New: Price
+  category?: 'ACADEMIC' | 'SAT' | 'IELTS' | 'IT' | 'LANG'; // New: Category
+  meetingLink?: string; // New: Zoom link
 }
 
 export interface Lesson {
@@ -202,4 +146,22 @@ export interface Invoice {
   amount: number;
   status: 'PAID' | 'PENDING' | 'OVERDUE';
   plan: string;
+}
+
+// New: 100-point system Breakdown
+export interface GradeBookEntry {
+  courseId: string;
+  courseName: string;
+  semester1: {
+    current: number; // 40 points
+    midterm: number; // 30 points
+    final: number; // 30 points
+    total: number; // 100 max
+  };
+  semester2: {
+    current: number;
+    midterm: number;
+    final: number;
+    total: number;
+  };
 }

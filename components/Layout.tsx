@@ -3,10 +3,10 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, BookOpen, GraduationCap, Users, 
   Settings, LogOut, Bell, Search, BarChart, School,
-  FileText, ClipboardCheck, User as UserIcon, Menu
+  FileText, ClipboardCheck, User as UserIcon, Menu, ShoppingBag, Baby
 } from 'lucide-react';
 import { User, UserRole } from '../types';
-import { NOTIFICATIONS, searchPlatform } from '../services/mockData';
+import { NOTIFICATIONS } from '../services/mockData';
 import { useLanguage } from '../contexts/LanguageContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -60,6 +60,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
         return [
           { label: t('dashboard'), icon: LayoutDashboard, path: '/student' },
           { label: t('courses'), icon: BookOpen, path: '/student/courses' },
+          { label: t('paidCourses'), icon: ShoppingBag, path: '/student/premium' }, // New
           { label: t('assignments'), icon: FileText, path: '/student/assignments' },
           { label: t('grades'), icon: GraduationCap, path: '/student/grades' },
         ];
@@ -84,6 +85,12 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           { label: 'Maktablar', icon: School, path: '/admin/schools' },
           { label: 'Foydalanuvchilar', icon: Users, path: '/admin/users' },
         ];
+      case UserRole.PARENT:
+        return [
+          { label: t('parentControl'), icon: LayoutDashboard, path: '/parent' },
+          { label: t('myChildren'), icon: Baby, path: '/parent/children' },
+          { label: t('settings'), icon: Settings, path: '/profile' },
+        ];
       default:
         return [];
     }
@@ -96,10 +103,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
         initial={{ x: -100, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.8, type: "spring", bounce: 0.2 }}
-        className="w-72 hidden md:flex flex-col m-6 rounded-[2rem] glass-panel z-40 relative overflow-hidden"
+        className="w-72 hidden md:flex flex-col m-6 rounded-[2rem] glass-panel z-40 relative overflow-hidden border-2 border-white/50"
       >
         {/* Sidebar Background Gradient */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none"></div>
+        <div className="absolute top-0 left-0 w-full h-40 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none"></div>
 
         <div className="p-8 pb-4 relative z-10">
           <div className="flex items-center gap-3 mb-10 cursor-pointer group" onClick={() => navigate('/')}>
@@ -107,7 +114,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               whileHover={{ rotate: 10, scale: 1.1 }}
               className="w-10 h-10 premium-gradient rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/30"
             >
-              <School className="text-white w-5 h-5" />
+              <School className="text-white w-6 h-6" />
             </motion.div>
             <div>
               <span className="font-extrabold text-xl text-slate-900 tracking-tight block group-hover:text-indigo-600 transition-colors">EduNexus</span>
@@ -123,7 +130,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
             <NavLink
               key={item.path}
               to={item.path}
-              end={item.path === '/student' || item.path === '/teacher' || item.path === '/director' || item.path === '/admin'}
+              end={item.path === '/student' || item.path === '/teacher' || item.path === '/director' || item.path === '/admin' || item.path === '/parent'}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-300 group relative overflow-hidden ${
                   isActive
@@ -144,6 +151,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
                   )}
                   <item.icon className={`w-5 h-5 relative z-10 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
                   <span className="relative z-10">{item.label}</span>
+                  {isActive && <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-white animate-pulse z-10"></div>}
                 </>
               )}
             </NavLink>
@@ -151,10 +159,10 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
         </nav>
 
         <div className="p-4 mt-auto relative z-10">
-           <div className="bg-white/40 backdrop-blur-md rounded-2xl p-4 border border-white/50 shadow-inner">
+           <div className="bg-white/40 backdrop-blur-md rounded-2xl p-4 border border-white/50 shadow-inner group hover:bg-white/60 transition-colors">
               <div className="flex items-center gap-3 mb-3 cursor-pointer" onClick={() => navigate('/profile')}>
                 <div className="relative">
-                  <div className="w-10 h-10 rounded-full p-[2px] premium-gradient">
+                  <div className="w-10 h-10 rounded-full p-[2px] premium-gradient group-hover:rotate-12 transition-transform duration-500">
                      <img src={user.avatarUrl} alt="User" className="w-full h-full rounded-full border-2 border-white object-cover" />
                   </div>
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></div>
@@ -195,7 +203,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="h-20 flex items-center justify-between px-8 mt-6 mx-6 rounded-[1.5rem] glass-panel mb-2"
+          className="h-20 flex items-center justify-between px-8 mt-6 mx-6 rounded-[1.5rem] glass-panel mb-2 border-2 border-white/40 shadow-sm"
         >
           <div className="flex items-center gap-6 w-full max-w-2xl">
             <button className="md:hidden p-2 text-slate-500 hover:text-indigo-600 bg-white/50 rounded-xl">

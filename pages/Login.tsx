@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { USERS } from '../services/mockData';
 import { AuthAPI } from '../services/api';
-import { School, ArrowRight, UserPlus, KeyRound, ChevronLeft, CheckCircle2, Sparkles } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { School, ArrowRight, UserPlus, KeyRound, ChevronLeft, CheckCircle2, Sparkles, User as UserIcon, Lock } from 'lucide-react';
+import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -15,6 +15,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Handle Mouse Move for Parallax
+  const handleMouseMove = (e: React.MouseEvent) => {
+    setMousePosition({
+      x: e.clientX / window.innerWidth,
+      y: e.clientY / window.innerHeight
+    });
+  };
 
   // Mock Login Handler
   const handleLogin = async (e: React.FormEvent) => {
@@ -55,26 +64,27 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   };
 
   const formVariants = {
-    hidden: { opacity: 0, x: -50 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" } },
-    exit: { opacity: 0, x: 50, transition: { duration: 0.3 } }
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
+    exit: { opacity: 0, x: 20, transition: { duration: 0.3 } }
   };
 
   return (
-    <div className="min-h-screen flex bg-white font-['Plus_Jakarta_Sans'] overflow-hidden">
+    <div className="min-h-screen flex bg-white font-['Plus_Jakarta_Sans'] overflow-hidden" onMouseMove={handleMouseMove}>
       
       {/* Left Section - Form */}
-      <div className="w-full lg:w-[45%] flex flex-col justify-center px-8 sm:px-16 xl:px-24 relative z-10">
+      <div className="w-full lg:w-[45%] flex flex-col justify-center px-8 sm:px-16 xl:px-24 relative z-10 bg-white">
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="absolute top-8 left-8 sm:left-16 xl:left-24 flex items-center gap-2.5"
+          className="absolute top-8 left-8 sm:left-16 xl:left-24 flex items-center gap-2.5 cursor-pointer"
+          onClick={() => window.location.href = '/'}
         >
-           <div className="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-              <School className="text-white w-5 h-5" />
+           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
+              <School className="text-white w-6 h-6" />
            </div>
-           <span className="text-xl font-extrabold text-slate-900 tracking-tight">EduNexus</span>
+           <span className="text-2xl font-extrabold text-slate-900 tracking-tight">EduNexus</span>
         </motion.div>
 
         <div className="max-w-md w-full mx-auto">
@@ -115,7 +125,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                           transition={{ delay: 0.1 * idx }}
                         >
                           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1">{label}</label>
-                          <input required type={label.includes('Parol') ? 'password' : 'text'} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800 placeholder:font-normal" />
+                          <div className="relative group">
+                              <input required type={label.includes('Parol') ? 'password' : 'text'} className="w-full pl-4 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800 placeholder:font-normal group-hover:bg-slate-100" />
+                          </div>
                         </motion.div>
                       ))}
                     </div>
@@ -141,15 +153,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   <button onClick={() => setView('LOGIN')} className="group flex items-center gap-2 text-slate-500 hover:text-indigo-600 text-sm font-bold mb-8 transition-colors">
                     <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform"/> Kirishga qaytish
                   </button>
-                  <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600">
-                    <KeyRound className="w-6 h-6" />
+                  <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 shadow-sm border border-indigo-100">
+                    <KeyRound className="w-8 h-8" />
                   </div>
                   <h2 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Parolni Tiklash</h2>
                   <p className="text-slate-500 mb-8 font-medium">Email manzilingizga tiklash havolasini yuboramiz.</p>
                   <form className="space-y-6" onSubmit={handleForgot}>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1">Email Manzil</label>
-                      <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="aziza@maktab.uz" />
+                      <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="aziza@maktab.uz" />
                     </div>
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
@@ -170,20 +182,23 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 animate="visible"
                 exit="exit"
               >
-                <h2 className="text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">Xush kelibsiz</h2>
-                <p className="text-slate-500 mb-8 font-medium text-lg">Platformaga kirish uchun ma'lumotlaringizni kiriting.</p>
+                <div className="mb-8">
+                   <h2 className="text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">Xush kelibsiz</h2>
+                   <p className="text-slate-500 font-medium text-lg">Platformaga kirish uchun ma'lumotlaringizni kiriting.</p>
+                </div>
                 
                 {/* Quick Login - Enhanced */}
-                <div className="mb-8 p-1 bg-slate-100/50 border border-slate-200 rounded-2xl">
+                <div className="mb-8 p-1 bg-slate-50 border border-slate-200 rounded-2xl">
                    <div className="grid grid-cols-2 gap-1">
                      {USERS.slice(0, 4).map((user) => (
                        <button
                          key={user.id}
                          onClick={() => onLogin(user)}
-                         className="text-left px-3 py-2.5 bg-white border border-transparent hover:border-slate-200 rounded-xl hover:shadow-md transition-all group"
+                         className="text-left px-3 py-2.5 bg-white border border-transparent hover:border-slate-200 rounded-xl hover:shadow-md transition-all group relative overflow-hidden"
                        >
-                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-500 transition-colors">{user.role}</span>
-                         <span className="block text-xs font-bold text-slate-700 truncate">{user.name}</span>
+                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-500 transition-colors relative z-10">{user.role}</span>
+                         <span className="block text-xs font-bold text-slate-700 truncate relative z-10">{user.name}</span>
+                         <div className="absolute inset-0 bg-indigo-50 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                        </button>
                      ))}
                    </div>
@@ -192,14 +207,20 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <form className="space-y-5" onSubmit={handleLogin}>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1">Email Manzil</label>
-                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="email@school.edu" />
+                      <div className="relative">
+                         <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                         <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800 placeholder-slate-400" placeholder="email@school.edu" />
+                      </div>
                     </div>
                     <div>
                       <div className="flex justify-between items-center mb-1.5 ml-1">
                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Parol</label>
-                         <button type="button" onClick={() => setView('FORGOT')} className="text-xs font-bold text-indigo-600 hover:text-indigo-700">Parolni unutdingizmi?</button>
+                         <button type="button" onClick={() => setView('FORGOT')} className="text-xs font-bold text-indigo-600 hover:text-indigo-700 underline">Parolni unutdingizmi?</button>
                       </div>
-                      <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="••••••••" />
+                      <div className="relative">
+                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                         <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800 placeholder-slate-400" placeholder="••••••••" />
+                      </div>
                     </div>
                     <motion.button 
                       whileHover={{ scale: 1.02 }}
@@ -224,69 +245,79 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             )}
           </AnimatePresence>
         </div>
-        
-        <div className="absolute bottom-8 text-center w-full left-0 text-xs text-slate-400 font-medium">
-          © 2024 EduNexus Platformasi. Barcha huquqlar himoyalangan.
-        </div>
       </div>
 
-      {/* Right Section - Visual */}
-      <motion.div 
-        initial={{ x: '100%' }}
-        animate={{ x: 0 }}
-        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} // Apple style easing
-        className="hidden lg:flex w-[55%] bg-[#0F172A] relative overflow-hidden items-center justify-center"
-      >
-        {/* Abstract Shapes/Gradients */}
+      {/* Right Section - Interactive Visual */}
+      <div className="hidden lg:flex w-[55%] bg-[#0F172A] relative overflow-hidden items-center justify-center">
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
+        
+        {/* Moving Blobs based on mouse */}
         <motion.div 
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-indigo-500/30 rounded-full blur-[100px]"
+          animate={{ x: mousePosition.x * 20, y: mousePosition.y * 20 }}
+          className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[120px] opacity-40"
         />
         <motion.div 
-          animate={{ scale: [1, 1.2, 1], rotate: [0, -5, 0] }}
-          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-          className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-violet-600/20 rounded-full blur-[100px]"
+          animate={{ x: mousePosition.x * -30, y: mousePosition.y * -30 }}
+          className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-blue-600 to-cyan-500 rounded-full blur-[120px] opacity-40"
         />
         
-        {/* Glassmorphic Card Effect */}
+        {/* Glass Card 3D Effect */}
         <motion.div 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="relative z-10 w-full max-w-lg p-8"
+          style={{ 
+             rotateX: (mousePosition.y - 0.5) * -10,
+             rotateY: (mousePosition.x - 0.5) * 10,
+          }}
+          className="relative z-10 w-full max-w-lg p-10 perspective-1000"
         >
-           <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-             
-             <div className="flex items-center gap-3 mb-6">
-                <div className="flex -space-x-3">
-                   {[1,2,3,4].map(i => <img key={i} src={`https://picsum.photos/100?random=${i}`} className="w-10 h-10 rounded-full border-2 border-slate-900" />)}
+           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group">
+             {/* Shine Effect */}
+             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+
+             <div className="flex items-center gap-4 mb-8">
+                <div className="flex -space-x-4">
+                   {[1,2,3,4].map(i => (
+                      <motion.img 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + i * 0.1 }}
+                        key={i} 
+                        src={`https://picsum.photos/100?random=${i}`} 
+                        className="w-12 h-12 rounded-full border-2 border-slate-900 object-cover" 
+                      />
+                   ))}
+                   <div className="w-12 h-12 rounded-full border-2 border-slate-900 bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+                      +2k
+                   </div>
                 </div>
-                <div className="text-white text-xs font-medium">
-                   <span className="font-bold">12k+ Talaba</span> ushbu haftada qo'shildi
+                <div className="text-white">
+                   <p className="text-sm font-medium opacity-80">Jamoaga qo'shiling</p>
+                   <p className="font-bold text-lg">Yangi davr ta'limi</p>
                 </div>
              </div>
 
-             <h2 className="text-3xl font-bold text-white mb-4 leading-tight">
-               "EduNexus bizning o'quv dasturimiz va baholashni boshqarish usulimizni inqilob qildi."
+             <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
+               "Maktab boshqaruvini <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">keyingi bosqichga</span> olib chiqing."
              </h2>
-             <div className="flex items-center gap-4 mt-6">
-                <img src="https://picsum.photos/100?random=10" className="w-12 h-12 rounded-full border-2 border-indigo-500/50" />
-                <div>
-                   <p className="text-white font-bold">Sara Konnor</p>
-                   <p className="text-indigo-200 text-sm">Direktor, Texnik Akademiya</p>
+             
+             <div className="flex items-center gap-4 mt-8 pt-8 border-t border-white/10">
+                <div className="flex-1">
+                   <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }}
+                        animate={{ width: "85%" }}
+                        transition={{ duration: 1.5, delay: 0.8 }}
+                        className="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"
+                      ></motion.div>
+                   </div>
+                   <div className="flex justify-between mt-2 text-xs text-indigo-200 font-medium">
+                      <span>Samaradorlik</span>
+                      <span>+85%</span>
+                   </div>
                 </div>
-             </div>
-
-             <div className="mt-8 flex gap-2">
-                <div className="h-1 w-12 bg-white rounded-full"></div>
-                <div className="h-1 w-2 bg-white/20 rounded-full"></div>
-                <div className="h-1 w-2 bg-white/20 rounded-full"></div>
              </div>
            </div>
         </motion.div>
-      </motion.div>
+      </div>
     </div>
   );
 };

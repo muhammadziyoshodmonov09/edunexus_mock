@@ -18,6 +18,9 @@
               'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
               'float': 'float 6s ease-in-out infinite',
               'blob': 'blob 7s infinite',
+              'spin-slow': 'spin 15s linear infinite',
+              'reverse-spin': 'reverseSpin 20s linear infinite',
+              'marquee': 'marquee 25s linear infinite',
             },
             keyframes: {
               float: {
@@ -29,6 +32,14 @@
                 "33%": { transform: "translate(30px, -50px) scale(1.1)" },
                 "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
                 "100%": { transform: "translate(0px, 0px) scale(1)" }
+              },
+              reverseSpin: {
+                from: { transform: 'rotate(360deg)' },
+                to: { transform: 'rotate(0deg)' }
+              },
+              marquee: {
+                '0%': { transform: 'translateX(0%)' },
+                '100%': { transform: 'translateX(-100%)' },
               }
             }
           }
@@ -54,6 +65,19 @@
         color: #ffffff;
       }
       
+      /* --- PREMIUM NOISE TEXTURE --- */
+      .bg-noise {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 50;
+        opacity: 0.03;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      }
+
       /* --- PREMIUM SCROLLBAR --- */
       ::-webkit-scrollbar { width: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
@@ -75,7 +99,7 @@
         pointer-events: none;
       }
 
-      /* Animated Blobs for Glass Effect */
+      /* Animated Blobs */
       .orb {
         position: absolute;
         border-radius: 50%;
@@ -83,13 +107,13 @@
         opacity: 0.6;
         animation: blob 10s infinite alternate;
       }
-      .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: #e0e7ff; animation-delay: 0s; }
-      .orb-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: #f3e8ff; animation-delay: 2s; }
-      .orb-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: #ccfbf1; animation-delay: 4s; }
+      .orb-1 { top: -10%; left: -10%; width: 50vw; height: 50vw; background: radial-gradient(circle, #818cf8, #c084fc); animation-delay: 0s; }
+      .orb-2 { bottom: -10%; right: -10%; width: 40vw; height: 40vw; background: radial-gradient(circle, #f472b6, #fbbf24); animation-delay: 2s; }
+      .orb-3 { top: 40%; left: 40%; width: 30vw; height: 30vw; background: radial-gradient(circle, #34d399, #60a5fa); animation-delay: 4s; }
 
-      body.dark .orb-1 { background: #312e81; opacity: 0.4; }
-      body.dark .orb-2 { background: #4c1d95; opacity: 0.4; }
-      body.dark .orb-3 { background: #115e59; opacity: 0.4; }
+      body.dark .orb-1 { background: radial-gradient(circle, #312e81, #4c1d95); opacity: 0.3; }
+      body.dark .orb-2 { background: radial-gradient(circle, #be185d, #b45309); opacity: 0.3; }
+      body.dark .orb-3 { background: radial-gradient(circle, #064e3b, #1e3a8a); opacity: 0.3; }
 
       /* Mesh Grid */
       .bg-grid {
@@ -106,55 +130,55 @@
 
       /* --- GLASSMORPHISM UTILITIES --- */
       .glass-panel {
-        background: rgba(255, 255, 255, 0.65);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        border: 1px solid rgba(255, 255, 255, 0.6);
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
       }
       
       body.dark .glass-panel {
-        background: rgba(17, 25, 40, 0.7);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-      }
-
-      .glass-button {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        transition: all 0.3s ease;
-      }
-      
-      .glass-button:hover {
-        background: rgba(255, 255, 255, 0.4);
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px -5px rgba(0,0,0,0.1);
+        background: rgba(17, 25, 40, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
       }
 
       .premium-gradient {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+      }
+      
+      .text-gradient {
+        background: linear-gradient(to right, #4f46e5, #9333ea, #db2777);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      
+      body.dark .text-gradient {
+        background: linear-gradient(to right, #818cf8, #c084fc, #f472b6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
     </style>
   <script type="importmap">
 {
   "imports": {
-    "framer-motion": "https://esm.sh/framer-motion@^12.29.2",
-    "vite": "https://esm.sh/vite@^7.3.1",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2",
-    "react/": "https://esm.sh/react@^19.2.4/",
     "react": "https://esm.sh/react@^19.2.4",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react/": "https://esm.sh/react@^19.2.4/",
     "@google/genai": "https://esm.sh/@google/genai@^1.38.0",
     "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "framer-motion": "https://esm.sh/framer-motion@^12.29.2",
     "recharts": "https://esm.sh/recharts@^3.7.0",
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0"
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
   }
 }
 </script>
 <link rel="stylesheet" href="/index.css">
 </head>
   <body class="antialiased selection:bg-indigo-500 selection:text-white">
+    <div class="bg-noise"></div>
     <div class="ambient-light">
       <div class="orb orb-1"></div>
       <div class="orb orb-2"></div>

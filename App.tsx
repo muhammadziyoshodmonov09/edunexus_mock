@@ -3,10 +3,15 @@ import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-d
 import { AnimatePresence } from 'framer-motion';
 import Layout from './components/Layout';
 import LandingPage from './pages/LandingPage';
+import Features from './pages/Features';
+import Solutions from './pages/Solutions';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentCourses from './pages/student/StudentCourses';
+import StudentPaidCourses from './pages/student/StudentPaidCourses'; // New
 import StudentCourseView from './pages/student/StudentCourseView';
 import StudentAssignments from './pages/student/StudentAssignments';
 import StudentGrades from './pages/student/StudentGrades';
@@ -23,6 +28,7 @@ import DirectorSettings from './pages/director/DirectorSettings';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminSchools from './pages/admin/AdminSchools';
 import AdminUsers from './pages/admin/AdminUsers';
+import ParentDashboard from './pages/ParentDashboard'; // New
 import { User, UserRole } from './types';
 import { LanguageProvider } from './contexts/LanguageContext';
 
@@ -50,6 +56,10 @@ const AnimatedRoutes: React.FC<{ user: User | null, handleLogin: (u: User) => vo
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<LandingPage user={user} />} />
+        <Route path="/features" element={<Features />} />
+        <Route path="/solutions" element={<Solutions />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/about" element={<About />} />
         
         <Route path="/login" element={!user ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} />
         
@@ -66,6 +76,7 @@ const AnimatedRoutes: React.FC<{ user: User | null, handleLogin: (u: User) => vo
              <Routes>
                 <Route path="/" element={<StudentDashboard user={user!} />} />
                 <Route path="/courses" element={<StudentCourses user={user!} />} />
+                <Route path="/premium" element={<StudentPaidCourses user={user!} />} />
                 <Route path="/courses/:courseId" element={<StudentCourseView />} />
                 <Route path="/assignments" element={<StudentAssignments />} />
                 <Route path="/grades" element={<StudentGrades user={user!} />} />
@@ -107,6 +118,16 @@ const AnimatedRoutes: React.FC<{ user: User | null, handleLogin: (u: User) => vo
                <Route path="/" element={<AdminDashboard />} />
                <Route path="/schools" element={<AdminSchools />} />
                <Route path="/users" element={<AdminUsers />} />
+             </Routes>
+          </ProtectedRoute>
+        } />
+
+        {/* Parent Routes */}
+        <Route path="/parent/*" element={
+          <ProtectedRoute allowedRole={UserRole.PARENT} user={user}>
+             <Routes>
+               <Route path="/" element={<ParentDashboard user={user!} />} />
+               <Route path="/children" element={<div className="p-8">Farzandlar tafsilotlari (Tez orada)</div>} />
              </Routes>
           </ProtectedRoute>
         } />
