@@ -23,6 +23,11 @@ const AiVoiceAssistant: React.FC = () => {
 
   const startListening = async () => {
     try {
+      // Check for API support
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+         throw new Error("Media Devices API not supported");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -35,18 +40,19 @@ const AiVoiceAssistant: React.FC = () => {
       setTranscript("Eshitmoqdaman...");
       drawVisualizer();
 
-      // Simulate recording duration then send to AI (Mock logic for demo)
+      // Real recording simulation: In a real app, you'd collect chunks here.
+      // For this MVP, we simulate a listening duration then send a prompt.
       setTimeout(() => {
         stopListening();
         processQuery();
       }, 4000);
 
     } catch (err) {
-      console.error("Microphone access denied or error:", err);
-      // Fallback to Simulation Mode for Demo purposes
+      console.warn("Microphone access denied or error:", err);
+      // Fallback to Simulation Mode for Demo purposes so the app doesn't crash
       setIsListening(true);
-      setTranscript("Mikrofon ishlamadi (Demo rejim)...");
-      simulateVisualizer(); // Use simulated visualizer
+      setTranscript("Mikrofon ruxsati yo'q (Demo rejim)...");
+      simulateVisualizer(); // Use fake visualizer
       
       setTimeout(() => {
         stopListening();
@@ -59,18 +65,24 @@ const AiVoiceAssistant: React.FC = () => {
     setIsListening(false);
     if (animationRef.current) cancelAnimationFrame(animationRef.current);
     
-    // Stop all tracks to release microphone
+    // Stop all tracks to release microphone hardware
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
 
+    // Close Audio Context
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+       audioContextRef.current.close();
+    }
+    
     if (sourceRef.current) {
       sourceRef.current.disconnect();
       sourceRef.current = null;
     }
   };
 
+  // Real Audio Visualizer
   const drawVisualizer = () => {
     if (!canvasRef.current || !analyserRef.current) return;
     const canvas = canvasRef.current;
@@ -118,6 +130,7 @@ const AiVoiceAssistant: React.FC = () => {
     draw();
   };
 
+  // Fake Visualizer for Demo Mode (When Mic fails)
   const simulateVisualizer = () => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -168,7 +181,10 @@ const AiVoiceAssistant: React.FC = () => {
     setTranscript("O'ylayapman...");
     
     try {
-       const prompt = "The student asked a question about physics. Give a short, encouraging answer in Uzbek.";
+       // In a real voice app, you would send the audio blob to a Speech-to-Text service first.
+       // Here we mock the user's input for the demo.
+       const prompt = "The student asked a general education question. Give a short, encouraging answer in Uzbek language about the importance of learning.";
+       
        const response = await ai.models.generateContent({
           model: 'gemini-3-flash-preview',
           contents: prompt

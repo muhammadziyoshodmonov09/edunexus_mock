@@ -27,7 +27,7 @@ import TeacherStudents from './pages/teacher/TeacherStudents';
 import TeacherResources from './pages/teacher/TeacherResources';
 import TeacherSyllabus from './pages/teacher/TeacherSyllabus'; 
 import TeacherRadar from './pages/teacher/TeacherRadar'; 
-import DirectorDashboard from './pages/DirectorDashboard';
+import DirectorDashboard from './pages/director/DirectorDashboard';
 import DirectorTeachers from './pages/director/DirectorTeachers';
 import DirectorStudents from './pages/director/DirectorStudents';
 import DirectorAnalytics from './pages/director/DirectorAnalytics';

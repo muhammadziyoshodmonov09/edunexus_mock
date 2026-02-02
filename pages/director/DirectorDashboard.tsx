@@ -1,7 +1,7 @@
 import React from 'react';
-import { User, UserRole } from '../types';
-import { getSchoolStats, USERS } from '../services/mockData';
-import { StatCard, PerformanceChart } from '../components/Widgets';
+import { User, UserRole } from '../../types';
+import { getSchoolStats, USERS } from '../../services/mockData';
+import { StatCard, PerformanceChart } from '../../components/Widgets';
 import { Users, AlertTriangle, TrendingUp, CheckCircle, Clock, BrainCircuit } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
