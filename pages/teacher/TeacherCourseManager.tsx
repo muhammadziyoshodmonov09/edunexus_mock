@@ -3,62 +3,92 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { COURSES, LESSONS, ASSIGNMENTS } from '../../services/mockData';
 import { 
   ChevronLeft, Plus, PlayCircle, FileText, CheckCircle, 
-  Trash2, Edit, Upload, Settings, Users, Calendar 
+  Trash2, Edit, Upload, Settings, Users, Calendar, Video, Book, HelpCircle, X, Clock
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TeacherCourseManager: React.FC = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
   const course = COURSES.find(c => c.id === courseId);
   const [activeTab, setActiveTab] = useState<'lessons' | 'assignments' | 'students'>('lessons');
+  
+  // Local State for Real-Time Updates simulation
+  const [localLessons, setLocalLessons] = useState(LESSONS.filter(l => l.courseId === courseId));
   const [isEditingLesson, setIsEditingLesson] = useState(false);
-
-  // Mock filtered data
-  const lessons = LESSONS.filter(l => l.courseId === courseId);
-  const assignments = ASSIGNMENTS.filter(a => a.courseId === courseId);
+  const [newLesson, setNewLesson] = useState({
+    title: '',
+    type: 'VIDEO',
+    content: '',
+    duration: ''
+  });
 
   if (!course) return <div className="p-8">Course not found</div>;
+
+  const handleAddLesson = () => {
+    if (!newLesson.title) return;
+    
+    const createdLesson = {
+      id: `l${Date.now()}`,
+      courseId: courseId!,
+      title: newLesson.title,
+      type: newLesson.type as any,
+      content: newLesson.content,
+      duration: newLesson.duration || '10 min',
+      isCompleted: false
+    };
+
+    setLocalLessons([...localLessons, createdLesson]);
+    setIsEditingLesson(false);
+    setNewLesson({ title: '', type: 'VIDEO', content: '', duration: '' });
+  };
+
+  const handleDeleteLesson = (id: string) => {
+     if(confirm("Darsni o'chirib tashlamoqchimisiz?")) {
+        setLocalLessons(localLessons.filter(l => l.id !== id));
+     }
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200 pb-6 bg-white/50 p-6 rounded-[2rem] backdrop-blur-sm">
         <div>
-          <button onClick={() => navigate('/teacher/courses')} className="flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 mb-2">
-            <ChevronLeft className="w-4 h-4" /> Back to Courses
+          <button onClick={() => navigate('/teacher/courses')} className="flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 mb-2 font-bold transition-colors">
+            <ChevronLeft className="w-4 h-4" /> Barcha Kurslar
           </button>
-          <h1 className="text-2xl font-bold text-slate-900">{course.title}</h1>
-          <p className="text-slate-500">Manage curriculum, content, and assessments.</p>
+          <h1 className="text-3xl font-black text-slate-900">{course.title}</h1>
+          <p className="text-slate-500 font-medium">O'quv dasturi, kontent va baholashni boshqaring.</p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50 flex items-center gap-2">
-             <Settings className="w-4 h-4" /> Settings
+          <button className="px-4 py-2 bg-white border border-slate-300 rounded-xl text-slate-700 font-bold hover:bg-slate-50 flex items-center gap-2 transition-all">
+             <Settings className="w-4 h-4" /> Sozlamalar
           </button>
-          <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 shadow-sm">
-             Publish Changes
+          <button className="px-6 py-2 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-500/30 transition-all">
+             Nashr Qilish
           </button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200">
+      <div className="flex bg-slate-100 p-1.5 rounded-xl inline-flex">
         <button 
           onClick={() => setActiveTab('lessons')}
-          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'lessons' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'lessons' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
         >
-          Lessons & Content
+          Darslar & Kontent
         </button>
         <button 
           onClick={() => setActiveTab('assignments')}
-          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'assignments' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'assignments' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
         >
-          Assignments & Quizzes
+          Vazifalar & Testlar
         </button>
         <button 
           onClick={() => setActiveTab('students')}
-          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'students' ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+          className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-all ${activeTab === 'students' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
         >
-          Students
+          Talabalar
         </button>
       </div>
 
@@ -66,144 +96,164 @@ const TeacherCourseManager: React.FC = () => {
       <div className="min-h-[400px]">
         {activeTab === 'lessons' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-               <h3 className="text-lg font-bold text-slate-900">Curriculum</h3>
-               <button onClick={() => setIsEditingLesson(true)} className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold hover:bg-indigo-100">
-                 <Plus className="w-4 h-4" /> Add Lesson
+            <div className="flex justify-between items-center bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+               <h3 className="text-lg font-bold text-indigo-900 pl-2">O'quv Dasturi</h3>
+               <button onClick={() => setIsEditingLesson(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-md transition-all active:scale-95">
+                 <Plus className="w-4 h-4" /> Dars Qo'shish
                </button>
             </div>
 
             <div className="space-y-3">
-              {lessons.map((lesson, idx) => (
-                <div key={lesson.id} className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-lg hover:shadow-sm transition-shadow">
-                  <div className="text-slate-400 font-mono text-sm w-6">{(idx + 1).toString().padStart(2, '0')}</div>
-                  <div className="p-2 bg-slate-100 rounded text-slate-600">
-                    {lesson.type === 'VIDEO' && <PlayCircle className="w-5 h-5" />}
-                    {lesson.type === 'TEXT' && <FileText className="w-5 h-5" />}
-                    {lesson.type === 'QUIZ' && <CheckCircle className="w-5 h-5" />}
+              <AnimatePresence>
+              {localLessons.map((lesson, idx) => (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  key={lesson.id} 
+                  className="flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:shadow-md hover:border-indigo-300 transition-all group"
+                >
+                  <div className="text-slate-400 font-mono text-sm w-8 font-bold opacity-50">{(idx + 1).toString().padStart(2, '0')}</div>
+                  <div className={`p-3 rounded-xl flex items-center justify-center ${
+                     lesson.type === 'VIDEO' ? 'bg-blue-50 text-blue-600' :
+                     lesson.type === 'TEXT' ? 'bg-orange-50 text-orange-600' :
+                     'bg-purple-50 text-purple-600'
+                  }`}>
+                    {lesson.type === 'VIDEO' && <Video className="w-6 h-6" />}
+                    {lesson.type === 'TEXT' && <Book className="w-6 h-6" />}
+                    {lesson.type === 'QUIZ' && <HelpCircle className="w-6 h-6" />}
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-slate-900">{lesson.title}</h4>
-                    <p className="text-xs text-slate-500 flex items-center gap-2">
-                       <span>{lesson.duration || 'No duration'}</span>
-                       <span>•</span>
-                       <span className={lesson.isCompleted ? 'text-emerald-600' : 'text-slate-400'}>
+                    <h4 className="font-bold text-slate-900 text-lg">{lesson.title}</h4>
+                    <div className="flex items-center gap-3 text-xs font-medium text-slate-500 mt-1">
+                       <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {lesson.duration || 'Belgilanmagan'}</span>
+                       <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                       <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wide ${
+                          lesson.type === 'VIDEO' ? 'bg-blue-100 text-blue-700' : 
+                          lesson.type === 'QUIZ' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'
+                       }`}>
                          {lesson.type}
                        </span>
-                    </p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button className="p-2 text-slate-400 hover:text-indigo-600"><Edit className="w-4 h-4" /></button>
-                    <button className="p-2 text-slate-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"><Edit className="w-5 h-5" /></button>
+                    <button onClick={() => handleDeleteLesson(lesson.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"><Trash2 className="w-5 h-5" /></button>
                   </div>
-                </div>
+                </motion.div>
               ))}
-              {lessons.length === 0 && <p className="text-slate-500 text-center py-8">No lessons yet. Click "Add Lesson" to start.</p>}
+              </AnimatePresence>
+              {localLessons.length === 0 && (
+                 <div className="text-center py-16 border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50/50">
+                    <Book className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                    <p className="text-slate-500 font-bold mb-2">Darslar mavjud emas</p>
+                    <p className="text-sm text-slate-400">Yangi dars qo'shish uchun yuqoridagi tugmani bosing.</p>
+                 </div>
+              )}
             </div>
 
-            {/* Simple Add Lesson Modal Simulation */}
+            {/* Premium Add Lesson Modal */}
+            <AnimatePresence>
             {isEditingLesson && (
-              <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                <div className="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
-                  <div className="p-5 border-b border-slate-200">
-                    <h3 className="text-lg font-bold text-slate-900">Create New Lesson</h3>
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-white/20"
+                >
+                  <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/80">
+                    <h3 className="text-xl font-black text-slate-900">Yangi Dars Yaratish</h3>
+                    <button onClick={() => setIsEditingLesson(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
+                       <X className="w-5 h-5" />
+                    </button>
                   </div>
-                  <div className="p-6 space-y-4">
+                  
+                  <div className="p-8 space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Lesson Title</label>
-                      <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. Intro to Algebra" />
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-1">Dars Mavzusi</label>
+                      <input 
+                        type="text" 
+                        value={newLesson.title}
+                        onChange={(e) => setNewLesson({...newLesson, title: e.target.value})}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:font-normal" 
+                        placeholder="Masalan: Algebra asoslari" 
+                      />
                     </div>
+                    
+                    <div className="grid grid-cols-2 gap-6">
+                       <div>
+                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-1">Turi</label>
+                         <div className="grid grid-cols-3 gap-2 bg-slate-50 p-1.5 rounded-xl border border-slate-200">
+                            {['VIDEO', 'TEXT', 'QUIZ'].map((type) => (
+                               <button 
+                                 key={type}
+                                 onClick={() => setNewLesson({...newLesson, type})}
+                                 className={`py-2 rounded-lg text-xs font-bold transition-all ${newLesson.type === type ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                               >
+                                  {type}
+                               </button>
+                            ))}
+                         </div>
+                       </div>
+                       <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-1">Davomiyligi</label>
+                          <input 
+                             type="text" 
+                             value={newLesson.duration}
+                             onChange={(e) => setNewLesson({...newLesson, duration: e.target.value})}
+                             className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none" 
+                             placeholder="masalan: 15 daqiqa"
+                          />
+                       </div>
+                    </div>
+
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Lesson Type</label>
-                      <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="VIDEO">Video Lesson</option>
-                        <option value="TEXT">Text / Reading</option>
-                        <option value="QUIZ">Quiz / Assessment</option>
-                      </select>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2 ml-1">Kontent / URL</label>
+                      <textarea 
+                        value={newLesson.content}
+                        onChange={(e) => setNewLesson({...newLesson, content: e.target.value})}
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none h-32 resize-none" 
+                        placeholder="Video havolasini yoki dars matnini shu yerga yozing..."
+                      ></textarea>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Content URL or Text</label>
-                      <textarea className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 h-24" placeholder="Paste video URL or type lesson content here..."></textarea>
-                    </div>
-                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 flex flex-col items-center justify-center text-slate-500 hover:bg-slate-50 hover:border-indigo-300 cursor-pointer">
-                       <Upload className="w-6 h-6 mb-2" />
-                       <span className="text-xs">Upload Documents (PDF, DOCX)</span>
+
+                    <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center text-slate-400 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-500 cursor-pointer transition-all bg-slate-50/50">
+                       <Upload className="w-8 h-8 mb-2" />
+                       <span className="text-sm font-bold">Fayllarni yuklash (PDF, DOCX)</span>
+                       <span className="text-xs opacity-70 mt-1">yoki shu yerga tashlang</span>
                     </div>
                   </div>
-                  <div className="p-5 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
-                    <button onClick={() => setIsEditingLesson(false)} className="px-4 py-2 text-slate-600 font-medium hover:bg-slate-200 rounded-lg">Cancel</button>
-                    <button onClick={() => setIsEditingLesson(false)} className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700">Save Lesson</button>
+
+                  <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                    <button onClick={() => setIsEditingLesson(false)} className="px-6 py-3 text-slate-600 font-bold hover:bg-slate-200 rounded-xl transition-colors">Bekor qilish</button>
+                    <button onClick={handleAddLesson} className="px-8 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-500/30 active:scale-95 transition-all">
+                       Saqlash
+                    </button>
                   </div>
-                </div>
+                </motion.div>
               </div>
             )}
+            </AnimatePresence>
           </div>
         )}
 
+        {/* Assignments Tab Placeholder */}
         {activeTab === 'assignments' && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-               <h3 className="text-lg font-bold text-slate-900">Assignments</h3>
-               <button className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold hover:bg-indigo-100">
-                 <Plus className="w-4 h-4" /> Create Assignment
-               </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {assignments.map(assign => (
-                <div key={assign.id} className="p-5 bg-white border border-slate-200 rounded-xl hover:border-indigo-300 transition-all">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-bold text-slate-900">{assign.title}</h4>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${assign.status === 'PENDING' ? 'bg-orange-50 border-orange-100 text-orange-700' : 'bg-emerald-50 border-emerald-100 text-emerald-700'}`}>
-                      {assign.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-slate-500 mb-4 line-clamp-2">{assign.description}</p>
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                     <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> Due: {assign.dueDate}</span>
-                     <span className="font-semibold">Max Score: {assign.maxGrade}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-slate-200">
+             <Calendar className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+             <h3 className="text-xl font-bold text-slate-700">Vazifalar Bo'limi</h3>
+             <p className="text-slate-500">Bu qism tez orada ishga tushadi.</p>
           </div>
         )}
 
+        {/* Students Tab Placeholder */}
         {activeTab === 'students' && (
-           <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-             <table className="w-full text-left text-sm">
-               <thead className="bg-slate-50 text-slate-500 border-b border-slate-200">
-                 <tr>
-                   <th className="px-6 py-4 font-medium">Student Name</th>
-                   <th className="px-6 py-4 font-medium">Email</th>
-                   <th className="px-6 py-4 font-medium">Progress</th>
-                   <th className="px-6 py-4 font-medium">Last Active</th>
-                   <th className="px-6 py-4 font-medium text-right">Actions</th>
-                 </tr>
-               </thead>
-               <tbody className="divide-y divide-slate-100">
-                 {[1,2,3,4,5].map(i => (
-                   <tr key={i} className="hover:bg-slate-50">
-                     <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-3">
-                       <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
-                         S{i}
-                       </div>
-                       Student {i}
-                     </td>
-                     <td className="px-6 py-4 text-slate-500">student{i}@school.edu</td>
-                     <td className="px-6 py-4">
-                       <div className="w-24 bg-slate-200 rounded-full h-1.5">
-                         <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: `${Math.random() * 100}%` }}></div>
-                       </div>
-                     </td>
-                     <td className="px-6 py-4 text-slate-500">2 hours ago</td>
-                     <td className="px-6 py-4 text-right">
-                       <button className="text-indigo-600 hover:underline">View Profile</button>
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
+           <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-slate-200">
+             <Users className="w-16 h-16 mx-auto text-slate-300 mb-4" />
+             <h3 className="text-xl font-bold text-slate-700">Talabalar Ro'yxati</h3>
+             <p className="text-slate-500">Bu qism tez orada ishga tushadi.</p>
+          </div>
         )}
       </div>
     </div>

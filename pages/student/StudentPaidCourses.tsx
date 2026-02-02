@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { User, Course } from '../../types';
 import { COURSES } from '../../services/mockData';
-import { ShoppingBag, Video, Globe, Book, Star, CheckCircle, Lock, MonitorPlay } from 'lucide-react';
+import { ShoppingBag, Video, Globe, Book, Star, CheckCircle, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -85,7 +85,7 @@ const StudentPaidCourses: React.FC<{ user: User }> = ({ user }) => {
                            rel="noreferrer"
                            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/30"
                         >
-                           <MonitorPlay className="w-5 h-5" />
+                           <Video className="w-5 h-5" />
                            Darsga Kirish
                         </a>
                      ) : (

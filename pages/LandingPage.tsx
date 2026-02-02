@@ -1,25 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, useScroll, useTransform, useMotionValue } from 'framer-motion';
+import { motion, useScroll, useTransform, useMotionValue, AnimatePresence } from 'framer-motion';
 import { 
   School, ArrowRight, BarChart3, 
-  BrainCircuit, Globe, Play, Sun, Moon, Star, Atom, Calculator, Dna, Microscope, Shield, Instagram
+  BrainCircuit, Globe, Play, Sun, Moon, Star, Atom, Calculator, Dna, Microscope, Shield, Instagram,
+  GraduationCap, Users, Building2, CheckCircle2, Zap, Clock, Banknote, Link as LinkIcon, Smartphone, Video, CreditCard, LayoutGrid
 } from 'lucide-react';
-import { User } from '../types';
+import { User, UserRole } from '../types';
 
 // --- Custom Icons ---
 const TelegramIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.863 1.09c-.292.116-.691.359-.691.756 0 .394.481.547.809.643l1.833.535c.78.228 1.488.595 2.103 1.107l.006.005c.895.748 1.522 1.77 1.773 2.92.052.237.106.52.17 1.05.023.187.047.387.072.593.037.31.076.627.116.942.067.534.134 1.065.176 1.343.032.213.197.359.395.344.2-.016.347-.184.453-.33l.008-.01c.219-.31.428-.62.628-.934l1.37-2.114a4.136 4.136 0 0 1 1.069-1.09l.668-.466c.86-.6 1.84-1.01 2.87-1.2 1.93-.35 3.36-1.57 3.8-3.47.66-2.86 1.3-5.74 1.93-8.61.16-.73-.55-1.39-1.25-1.09z" />
     <path d="M10.5 10.5l4.5-4.5" />
-  </svg>
-);
-
-const DiscordIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M9 12a1 1 0 1 0 2 0 1 1 0 1 0-2 0" />
-    <path d="M13 12a1 1 0 1 0 2 0 1 1 0 1 0-2 0" />
-    <path d="M18.92 5.126C18.92 5.126 16.76 3.018 13.55 3.018C13.55 3.018 11.43 3.018 9.079 5.126C9.079 5.126 3.018 13.98 3.018 20.98C3.018 20.98 5.625 21.03 8.356 19.33C8.356 19.33 8.825 18.25 9.079 17.51C9.079 17.51 7.218 16.89 6.456 16.03C6.456 16.03 6.64 15.93 6.784 15.86C9.916 17.37 13.71 17.47 17.15 15.86C17.29 15.93 17.47 16.03 17.47 16.03C16.71 16.89 14.85 17.51 14.85 17.51C15.11 18.25 15.57 19.33 15.57 19.33C18.3 21.03 20.91 20.98 20.91 20.98C20.91 13.98 14.85 5.126 14.85 5.126C12.5 3.018 10.38 3.018 10.38 3.018C7.168 3.018 5.009 5.126 5.009 5.126" />
   </svg>
 );
 
@@ -35,13 +28,11 @@ const Badge = ({ children, isDark }: { children?: React.ReactNode, isDark: boole
   </div>
 );
 
-// Marquee Component
 const Marquee = ({ isDark }: { isDark: boolean }) => {
   const logos = [
     "Tech Academy", "Lincoln High", "Cambridge Int.", "Oxford Prep", 
     "Stanford Online", "MIT OpenCourse", "Harvard Extension", "Yale Digital"
   ];
-  
   return (
     <div className="w-full overflow-hidden py-4 opacity-70">
       <div className="flex animate-marquee whitespace-nowrap gap-16">
@@ -55,7 +46,6 @@ const Marquee = ({ isDark }: { isDark: boolean }) => {
   );
 };
 
-// Tilt Card Component
 const TiltCard = ({ children, className }: { children?: React.ReactNode, className?: string }) => {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -86,13 +76,114 @@ const TiltCard = ({ children, className }: { children?: React.ReactNode, classNa
   );
 };
 
+const Counter = ({ from, to }: { from: number, to: number }) => {
+  const nodeRef = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+    const controls = { value: from, stop: () => {} };
+    let start: number | null = null;
+    const duration = 2000;
+    const step = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const current = Math.floor(progress * (to - from) + from);
+      node.textContent = current.toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [from, to]);
+  return <span ref={nodeRef} />;
+};
+
+// --- ORBITAL COMPONENT ---
+// This uses CSS animations to handle orbit and counter-orbit, allowing pause on hover.
+const OrbitingPlanet = ({ 
+  radius, 
+  duration, 
+  angleOffset, 
+  icon: Icon, 
+  color, 
+  label, 
+  isDark 
+}: { 
+  radius: number, 
+  duration: number, 
+  angleOffset: number, 
+  icon: any, 
+  color: string, 
+  label: string, 
+  isDark: boolean 
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div 
+      className="absolute top-1/2 left-1/2 rounded-full pointer-events-none"
+      style={{
+        width: radius * 2,
+        height: radius * 2,
+        marginLeft: -radius,
+        marginTop: -radius,
+        // The container rotates
+        animation: `spin ${duration}s linear infinite`,
+        // Start from a different angle
+        animationDelay: `-${(duration * angleOffset) / 360}s`,
+        // Pause on hover
+        animationPlayState: isHovered ? 'paused' : 'running'
+      }}
+    >
+      {/* Laser Beam - Connects Center to Planet */}
+      <div 
+        className="absolute left-1/2 top-0 w-0.5 origin-bottom bg-gradient-to-t from-indigo-500 via-purple-500 to-transparent transition-opacity duration-300"
+        style={{ 
+          height: '50%', // Radius
+          opacity: isHovered ? 1 : 0
+        }}
+      >
+         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-3 bg-indigo-500 rounded-full blur-sm"></div>
+      </div>
+
+      {/* The Planet - Positioned at 12 o'clock (top center) of the rotating container */}
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* Counter-Rotation Container - Spins opposite to keep icon upright */}
+        <div
+          style={{
+            animation: `spin ${duration}s linear infinite reverse`,
+            animationDelay: `-${(duration * angleOffset) / 360}s`, // Must match parent delay to sync
+            animationPlayState: isHovered ? 'paused' : 'running'
+          }}
+        >
+          <div className={`relative group`}>
+             <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-white shadow-xl ${color} transition-transform duration-300 group-hover:scale-125 cursor-pointer z-20 relative border-2 border-white/10`}>
+                <Icon className="w-7 h-7 md:w-8 md:h-8" />
+             </div>
+             
+             {/* Tooltip */}
+             <div className={`absolute top-full mt-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-30 shadow-xl ${isDark ? 'bg-slate-800 text-white border border-white/20' : 'bg-white text-slate-900 border border-slate-200'}`}>
+                {label}
+                <div className={`absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 ${isDark ? 'bg-slate-800 border-t border-l border-white/20' : 'bg-white border-t border-l border-slate-200'}`}></div>
+             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [activeRole, setActiveRole] = useState<'student' | 'teacher' | 'director'>('student');
+  const [studentCount, setStudentCount] = useState(500);
+  
   const { scrollY } = useScroll();
   const heroRef = useRef(null);
   
-  // Parallax effect
   const y1 = useTransform(scrollY, [0, 500], [0, 200]);
   const rotateHero = useTransform(scrollY, [0, 1000], [0, 45]);
 
@@ -103,6 +194,22 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
+  const handleDashboardClick = () => {
+    if (!user) return;
+    switch (user.role) {
+        case UserRole.STUDENT: navigate('/student'); break;
+        case UserRole.TEACHER: navigate('/teacher'); break;
+        case UserRole.DIRECTOR: navigate('/director'); break;
+        case UserRole.ADMIN: navigate('/admin'); break;
+        case UserRole.PARENT: navigate('/parent'); break;
+        default: navigate('/');
+    }
+  };
+
+  // ROI Logic
+  const hoursSaved = Math.round(studentCount * 1.5); 
+  const moneySaved = Math.round(studentCount * 12000); 
+
   const navItems = [
     { label: 'Xususiyatlar', path: '/features' },
     { label: 'Yechimlar', path: '/solutions' },
@@ -110,15 +217,100 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
     { label: 'Biz Haqimizda', path: '/about' }
   ];
 
+  const roleContent = {
+    student: {
+      title: "Gamifikatsiya & O'sish",
+      desc: "Zerikarli darslar o'rniga qiziqarli missiyalar. XP yig'ing, ligalarda ko'tariling va kelajak kasbingizni AI yordamida aniqlang.",
+      points: ["Dreamscape OS: Kelajak simulyatori", "AI Arena: Buyuklar bilan bahs", "Focus Garden: Diqqatni jamlash"],
+      mockUI: (
+        <div className="bg-slate-900 rounded-xl p-4 w-full h-full relative overflow-hidden border border-slate-700">
+           <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-xs font-black text-black">LVL 5</div>
+              <div className="h-2 flex-1 bg-slate-700 rounded-full overflow-hidden">
+                 <div className="h-full w-[70%] bg-gradient-to-r from-yellow-400 to-orange-500"></div>
+              </div>
+           </div>
+           <div className="grid grid-cols-2 gap-3">
+              <div className="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                 <div className="text-xs text-slate-400">Reyting</div>
+                 <div className="text-lg font-bold text-white">#3 Top</div>
+              </div>
+              <div className="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                 <div className="text-xs text-slate-400">Coins</div>
+                 <div className="text-lg font-bold text-yellow-400">2,450</div>
+              </div>
+           </div>
+           <div className="mt-4 bg-indigo-900/30 p-3 rounded-lg border border-indigo-500/30 flex items-center gap-3">
+              <BrainCircuit className="w-5 h-5 text-indigo-400" />
+              <div className="text-xs text-indigo-200">Yangi missiya: "Kvant Fizikasi"</div>
+           </div>
+        </div>
+      )
+    },
+    teacher: {
+      title: "AI Assistent & Nazorat",
+      desc: "Dars rejalari 5 soniyada tayyor. Sinfdagi muhitni 'Radar' orqali kuzating va o'quvchilarning bo'shliqlarini avtomatik aniqlang.",
+      points: ["Neural Syllabus: Dars konstruktori", "Classroom Radar: Jonli monitoring", "AI Quiz Generator"],
+      mockUI: (
+        <div className="bg-white rounded-xl p-4 w-full h-full relative overflow-hidden border border-slate-200 shadow-sm">
+           <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-bold text-slate-500 uppercase">Sinf Faolligi</span>
+              <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">85% Yuqori</span>
+           </div>
+           <div className="flex items-end gap-1 h-16 mb-4">
+              {[40, 65, 50, 85, 60, 95, 75].map((h, i) => (
+                 <div key={i} className="flex-1 bg-indigo-500 rounded-t-sm" style={{ height: `${h}%`, opacity: 0.5 + (i * 0.1) }}></div>
+              ))}
+           </div>
+           <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs text-slate-600 bg-slate-50 p-2 rounded border border-slate-100">
+                 <Zap className="w-3 h-3 text-yellow-500" />
+                 AI: "Aziz bugun chalg'iyapti, unga savol bering."
+              </div>
+           </div>
+        </div>
+      )
+    },
+    director: {
+      title: "NeuroLink & Strategiya",
+      desc: "Maktabning 'Raqamli Egizagi'. Moliyaviy oqimlar, o'qituvchilar samaradorligi va maktab obro'sini bitta ekranda boshqaring.",
+      points: ["NeuroLink: 360° Nazorat", "Smart Budgeting", "Xavfsizlik Monitoringi"],
+      mockUI: (
+        <div className="bg-slate-50 rounded-xl p-4 w-full h-full relative overflow-hidden border border-slate-200">
+           <div className="grid grid-cols-2 gap-3 mb-4">
+              <div className="bg-white p-3 rounded-lg shadow-sm">
+                 <div className="text-[10px] text-slate-400 uppercase">Daromad</div>
+                 <div className="text-sm font-black text-slate-900">$45k <span className="text-emerald-500 text-[10px]">+12%</span></div>
+              </div>
+              <div className="bg-white p-3 rounded-lg shadow-sm">
+                 <div className="text-[10px] text-slate-400 uppercase">O'quvchilar</div>
+                 <div className="text-sm font-black text-slate-900">1,250</div>
+              </div>
+           </div>
+           <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-100">
+              <div className="flex items-center gap-2 mb-2">
+                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                 <span className="text-xs font-bold text-slate-700">Xavfsizlik Tizimi</span>
+              </div>
+              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                 <div className="h-full w-[98%] bg-emerald-500"></div>
+              </div>
+              <div className="text-[10px] text-slate-400 mt-1 text-right">Online: 98%</div>
+           </div>
+        </div>
+      )
+    }
+  };
+
   return (
     <div className={`min-h-screen transition-colors duration-500 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
       
-      {/* --- NAVBAR --- */}
+      {/* NAVBAR */}
       <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrollY.get() > 20 
-          ? (isDarkMode ? 'bg-[#050505]/70 border-b border-white/5' : 'bg-white/70 border-b border-slate-100') 
+          ? (isDarkMode ? 'bg-[#050505]/80 border-b border-white/5' : 'bg-white/80 border-b border-slate-100') 
           : 'bg-transparent border-transparent'
-        } backdrop-blur-lg`}>
+        } backdrop-blur-xl`}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/')}>
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${isDarkMode ? 'bg-gradient-to-tr from-indigo-600 to-purple-600 text-white' : 'bg-white text-indigo-600'}`}>
@@ -151,7 +343,7 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
             </button>
             
             {user ? (
-               <button onClick={() => navigate('/student')} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all hover:scale-105 active:scale-95">
+               <button onClick={handleDashboardClick} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/30 hover:bg-indigo-700 transition-all hover:scale-105 active:scale-95">
                  Kabinet
                </button>
             ) : (
@@ -175,11 +367,10 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
         </div>
       </nav>
 
-      {/* --- HERO SECTION REIMAGINED --- */}
+      {/* HERO SECTION */}
       <section className="relative pt-32 pb-32 overflow-hidden" ref={heroRef}>
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
           
-          {/* Left Text Content */}
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -221,31 +412,19 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
                 <Play className="w-5 h-5 fill-current" /> Demo Video
               </button>
             </div>
-            
-            <div className="mt-10 flex items-center gap-4 text-sm font-semibold opacity-70">
-               <div className="flex -space-x-3">
-                  {[1,2,3,4].map(i => <img key={i} src={`https://picsum.photos/50?random=${i+10}`} className="w-10 h-10 rounded-full border-2 border-white dark:border-black" />)}
-               </div>
-               <div>
-                  <div className="flex text-yellow-400"><Star className="w-3 h-3 fill-current"/><Star className="w-3 h-3 fill-current"/><Star className="w-3 h-3 fill-current"/><Star className="w-3 h-3 fill-current"/><Star className="w-3 h-3 fill-current"/></div>
-                  <p>1200+ Maktablar tanlovi</p>
-               </div>
-            </div>
           </motion.div>
 
-          {/* Right 3D Animation */}
+          {/* RIGHT 3D ANIMATION */}
           <motion.div 
             style={{ y: y1, rotate: rotateHero }}
             className="relative hidden lg:flex items-center justify-center h-[600px]"
           >
-             {/* Central Hub */}
              <div className="relative z-20 w-48 h-48 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full flex items-center justify-center shadow-[0_0_100px_rgba(99,102,241,0.4)] animate-float">
                 <div className="w-32 h-32 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center shadow-inner">
                    <School className="w-16 h-16 text-white" />
                 </div>
              </div>
 
-             {/* Orbiting Elements */}
              <motion.div className="absolute w-[400px] h-[400px] border border-dashed border-indigo-300/30 rounded-full animate-spin-slow z-10">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-800 p-3 rounded-2xl shadow-lg">
                    <Atom className="w-8 h-8 text-blue-500" />
@@ -264,18 +443,37 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
                 </div>
              </motion.div>
              
-             {/* Decorative Blobs underneath */}
              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-500/10 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
           </motion.div>
         </div>
 
-        {/* Marquee Section */}
         <div className="mt-20 border-y border-slate-200/50 dark:border-white/5 bg-white/30 dark:bg-black/20 backdrop-blur-sm">
            <Marquee isDark={isDarkMode} />
         </div>
       </section>
 
-      {/* --- BENTO GRID SECTION --- */}
+      {/* STATISTICS */}
+      <section className={`py-12 border-b ${isDarkMode ? 'border-white/10 bg-[#0A0A0A]' : 'border-slate-200 bg-slate-50'}`}>
+         <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            {[
+               { label: "Faol O'quvchilar", val: 54200 },
+               { label: "Yuklangan Darslar", val: 125000 },
+               { label: "AI Javoblari", val: 890000 },
+               { label: "Hamkor Maktablar", val: 1240 }
+            ].map((stat, i) => (
+               <div key={i}>
+                  <div className={`text-3xl md:text-4xl font-black mb-1 ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+                     <Counter from={0} to={stat.val} />+
+                  </div>
+                  <div className={`text-xs font-bold uppercase tracking-widest ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                     {stat.label}
+                  </div>
+               </div>
+            ))}
+         </div>
+      </section>
+
+      {/* BENTO GRID */}
       <section className="py-32 px-6 relative">
          <div className="max-w-7xl mx-auto">
             <motion.div 
@@ -291,8 +489,6 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 auto-rows-[350px]">
-               
-               {/* Card 1: AI (Large) */}
                <TiltCard className={`md:col-span-2 rounded-[2.5rem] p-10 flex flex-col justify-between border transition-all overflow-hidden group ${
                    isDarkMode 
                      ? 'bg-gradient-to-br from-indigo-900/40 to-black border-white/10 hover:border-indigo-500/50' 
@@ -307,28 +503,9 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
                         Gemini 3 Flash texnologiyasi asosida har bir talaba uchun 24/7 ishlaydigan shaxsiy yordamchi.
                      </p>
                   </div>
-                  {/* Interactive Visual */}
                   <div className="absolute right-[-50px] bottom-[-50px] w-[300px] h-[300px] bg-indigo-500/20 rounded-full blur-[80px] group-hover:bg-indigo-500/30 transition-colors"></div>
-                  <div className="absolute right-10 bottom-10 opacity-80 transform group-hover:scale-110 transition-transform duration-500">
-                      <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 w-64">
-                         <div className="flex gap-2 mb-2">
-                            <div className="w-2 h-2 rounded-full bg-red-400"></div>
-                            <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
-                            <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                         </div>
-                         <div className="space-y-2">
-                            <div className="h-2 bg-white/20 rounded w-3/4"></div>
-                            <div className="h-2 bg-white/20 rounded w-1/2"></div>
-                         </div>
-                      </div>
-                      <div className="bg-indigo-600 p-4 rounded-2xl border border-white/10 w-64 mt-2 ml-8 shadow-xl">
-                         <div className="h-2 bg-white/40 rounded w-full mb-2"></div>
-                         <div className="h-2 bg-white/40 rounded w-2/3"></div>
-                      </div>
-                  </div>
                </TiltCard>
 
-               {/* Card 2: Analytics */}
                <TiltCard className={`rounded-[2.5rem] p-10 flex flex-col border transition-all overflow-hidden group ${
                     isDarkMode 
                       ? 'bg-[#0A0A0A] border-white/10 hover:border-emerald-500/50' 
@@ -352,7 +529,6 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
                   </div>
                </TiltCard>
 
-               {/* Card 3: Security */}
                <TiltCard className={`rounded-[2.5rem] p-10 flex flex-col border transition-all overflow-hidden group ${
                     isDarkMode 
                       ? 'bg-[#0A0A0A] border-white/10 hover:border-amber-500/50' 
@@ -365,13 +541,8 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
                   <p className={`text-base ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                      Bank darajasidagi shifrlash va to'liq ma'lumotlar maxfiyligi.
                   </p>
-                  <div className="mt-8 relative h-full flex items-center justify-center">
-                     <div className="w-24 h-24 rounded-full border-4 border-amber-500/30 animate-ping absolute"></div>
-                     <Shield className="w-16 h-16 text-amber-500 relative z-10" />
-                  </div>
                </TiltCard>
 
-               {/* Card 4: Global (Wide) */}
                <TiltCard className={`md:col-span-2 rounded-[2.5rem] p-10 flex flex-col justify-center border transition-all relative overflow-hidden group ${
                     isDarkMode 
                       ? 'bg-[#0A0A0A] border-white/10 hover:border-blue-500/50' 
@@ -382,108 +553,212 @@ const LandingPage: React.FC<{ user: User | null }> = ({ user }) => {
                         <Globe className="w-12 h-12 text-blue-400 animate-spin-slow" />
                      </div>
                      <div>
-                        <h3 className={`text-3xl font-bold mb-2 ${isDarkMode ? '' : 'text-white'}`}>Global Platforma</h3>
-                        <p className={`text-lg ${isDarkMode ? 'text-slate-400' : 'text-slate-400'}`}>Dunyo bo'ylab 500+ maktablar ishonchi.</p>
+                        <h3 className="text-3xl font-bold mb-2">Global Platforma</h3>
+                        <p className="text-lg opacity-80">Dunyo bo'ylab 500+ maktablar ishonchi.</p>
                      </div>
                   </div>
-                  {/* Grid Background */}
-                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none opacity-20"></div>
-                  <div className="absolute -right-20 -top-20 w-96 h-96 bg-blue-500/20 rounded-full blur-[100px]"></div>
                </TiltCard>
             </div>
          </div>
       </section>
 
-      {/* --- CTA SECTION --- */}
+      {/* ROI CALCULATOR */}
+      <section className={`py-24 px-6 relative border-t ${isDarkMode ? 'border-white/10 bg-[#050505]' : 'border-slate-200 bg-slate-50'}`}>
+         <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+               <div className="text-left">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-500 font-bold text-sm mb-6 border border-emerald-500/20">
+                     <Calculator className="w-4 h-4" /> ROI Calculator
+                  </div>
+                  <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight">Sizning Foydangizni Hisoblang</h2>
+                  <p className={`text-xl mb-10 leading-relaxed ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                     EduNexus yordamida nafaqat vaqt, balki katta miqdordagi mablag'ni ham tejashingiz mumkin.
+                  </p>
+                  
+                  <div className="space-y-8">
+                     <div>
+                        <div className="flex justify-between items-center mb-4">
+                           <span className="font-bold text-sm uppercase tracking-wide opacity-70">O'quvchilar Soni</span>
+                           <span className={`text-3xl font-black ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>{studentCount}</span>
+                        </div>
+                        <input 
+                           type="range" 
+                           min="50" 
+                           max="5000" 
+                           step="50"
+                           value={studentCount}
+                           onChange={(e) => setStudentCount(Number(e.target.value))}
+                           className="w-full h-4 bg-slate-200 rounded-full appearance-none cursor-pointer accent-indigo-600 hover:accent-indigo-500 transition-all"
+                        />
+                        <div className="flex justify-between mt-2 text-xs font-bold opacity-50">
+                           <span>50</span>
+                           <span>5000</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <motion.div 
+                     whileHover={{ y: -5 }}
+                     className={`p-8 rounded-[2rem] border relative overflow-hidden flex flex-col justify-between h-full ${
+                        isDarkMode ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200 shadow-xl'
+                     }`}
+                  >
+                     <div className="w-14 h-14 rounded-2xl bg-blue-100 flex items-center justify-center text-blue-600 mb-6">
+                        <Clock className="w-7 h-7" />
+                     </div>
+                     <div>
+                        <h3 className="text-4xl font-black mb-2 text-blue-600">{hoursSaved.toLocaleString()}+</h3>
+                        <p className="font-bold text-lg mb-1">Soat / Oyiga</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Tejalgan vaqt</p>
+                     </div>
+                  </motion.div>
+
+                  <motion.div 
+                     whileHover={{ y: -5 }}
+                     className={`p-8 rounded-[2rem] border relative overflow-hidden flex flex-col justify-between h-full ${
+                        isDarkMode ? 'bg-slate-900 border-white/10' : 'bg-white border-slate-200 shadow-xl'
+                     }`}
+                  >
+                     <div className="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-600 mb-6">
+                        <Banknote className="w-7 h-7" />
+                     </div>
+                     <div>
+                        <h3 className="text-4xl font-black mb-2 text-emerald-600">{moneySaved.toLocaleString()}</h3>
+                        <p className="font-bold text-lg mb-1">UZS / Oyiga</p>
+                        <p className={`text-sm ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Iqtisod qilingan mablag'</p>
+                     </div>
+                  </motion.div>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      {/* SOLAR SYSTEM INTEGRATIONS */}
+      <section className="py-32 px-6 relative overflow-hidden min-h-[800px] flex items-center justify-center">
+         <div className="max-w-7xl mx-auto text-center w-full relative z-10">
+            <h2 className="text-4xl md:text-5xl font-black mb-6">Yagona Ekotizim</h2>
+            <p className={`text-xl max-w-2xl mx-auto mb-24 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+               Barcha sevimli vositalaringiz bir joyda. Sichqonchani olib boring va bog'liqlikni his qiling.
+            </p>
+
+            <div className="relative w-full h-[600px] flex items-center justify-center">
+               
+               {/* Center Sun */}
+               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                  <motion.div 
+                     animate={{ 
+                        scale: [1, 1.05, 1],
+                        boxShadow: [
+                           "0 0 40px rgba(99,102,241,0.4)",
+                           "0 0 80px rgba(99,102,241,0.7)",
+                           "0 0 40px rgba(99,102,241,0.4)"
+                        ]
+                     }}
+                     transition={{ duration: 4, repeat: Infinity }}
+                     className="w-32 h-32 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center relative z-20"
+                  >
+                     <School className="w-16 h-16 text-white animate-pulse" />
+                  </motion.div>
+               </div>
+
+               {/* Ring 1: 300px width = 150px radius */}
+               <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed ${isDarkMode ? 'border-white/10' : 'border-slate-300'}`} style={{ width: 300, height: 300 }}>
+                  <OrbitingPlanet radius={150} duration={20} angleOffset={0} icon={Video} color="bg-blue-500" label="Zoom" isDark={isDarkMode} />
+                  <OrbitingPlanet radius={150} duration={20} angleOffset={180} icon={TelegramIcon} color="bg-sky-500" label="Telegram" isDark={isDarkMode} />
+               </div>
+
+               {/* Ring 2: 450px width = 225px radius */}
+               <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed ${isDarkMode ? 'border-white/10' : 'border-slate-300'}`} style={{ width: 450, height: 450 }}>
+                  <OrbitingPlanet radius={225} duration={35} angleOffset={90} icon={LayoutGrid} color="bg-orange-500" label="Google" isDark={isDarkMode} />
+                  <OrbitingPlanet radius={225} duration={35} angleOffset={270} icon={CreditCard} color="bg-emerald-500" label="Payme" isDark={isDarkMode} />
+               </div>
+
+               {/* Ring 3: 600px width = 300px radius */}
+               <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-dashed ${isDarkMode ? 'border-white/10' : 'border-slate-300'}`} style={{ width: 600, height: 600 }}>
+                  <OrbitingPlanet radius={300} duration={50} angleOffset={45} icon={Smartphone} color="bg-purple-600" label="Mobile" isDark={isDarkMode} />
+                  <OrbitingPlanet radius={300} duration={50} angleOffset={225} icon={LinkIcon} color="bg-slate-500" label="API" isDark={isDarkMode} />
+               </div>
+
+            </div>
+         </div>
+      </section>
+
+      {/* ROLE PREVIEW */}
       <section className="py-24 px-6 relative">
-         <motion.div 
-           initial={{ scale: 0.9, opacity: 0 }}
-           whileInView={{ scale: 1, opacity: 1 }}
-           transition={{ duration: 0.5 }}
-           className={`max-w-5xl mx-auto rounded-[3rem] p-16 text-center relative overflow-hidden border ${
-            isDarkMode 
-               ? 'bg-gradient-to-br from-indigo-900/80 to-purple-900/80 border-white/10' 
-               : 'bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-2xl shadow-indigo-500/40'
-         }`}>
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-            <div className="relative z-10">
-               <h2 className={`text-4xl md:text-6xl font-black mb-6 ${isDarkMode ? 'text-white' : 'text-white'}`}>Kelajakni bugun boshlang</h2>
-               <p className={`text-xl mb-10 max-w-2xl mx-auto ${isDarkMode ? 'text-indigo-100' : 'text-indigo-100'}`}>
-                  14 kunlik bepul sinov davri. Kredit karta talab qilinmaydi. Bugunoq o'quv jarayonini inqilob qiling.
-               </p>
-               <button 
-                  onClick={() => navigate('/login')}
-                  className={`px-10 py-5 rounded-2xl font-bold text-xl transition-all hover:scale-105 active:scale-95 shadow-xl ${
-                     isDarkMode 
-                        ? 'bg-white text-indigo-900 hover:bg-indigo-50' 
-                        : 'bg-white text-indigo-600 hover:bg-indigo-50'
-                  }`}
+         <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+               <h2 className="text-4xl md:text-5xl font-black mb-6">Sizning Ropingiz Qanday?</h2>
+               <div className="flex justify-center mt-8">
+                  <div className={`p-1.5 rounded-2xl flex gap-2 border ${isDarkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
+                     <button onClick={() => setActiveRole('student')} className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 ${activeRole === 'student' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-900'}`}>
+                        <GraduationCap className="w-4 h-4" /> O'quvchi
+                     </button>
+                     <button onClick={() => setActiveRole('teacher')} className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 ${activeRole === 'teacher' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-900'}`}>
+                        <Users className="w-4 h-4" /> O'qituvchi
+                     </button>
+                     <button onClick={() => setActiveRole('director')} className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 ${activeRole === 'director' ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-900'}`}>
+                        <Building2 className="w-4 h-4" /> Direktor
+                     </button>
+                  </div>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+               <motion.div 
+                  key={activeRole}
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className="space-y-8"
                >
+                  <h3 className="text-3xl font-bold">{roleContent[activeRole].title}</h3>
+                  <p className="text-lg opacity-80">{roleContent[activeRole].desc}</p>
+                  <ul className="space-y-4">
+                     {roleContent[activeRole].points.map((p, i) => (
+                        <li key={i} className="flex items-center gap-3 font-medium"><CheckCircle2 className="w-5 h-5 text-indigo-500" /> {p}</li>
+                     ))}
+                  </ul>
+                  <button onClick={() => navigate('/login')} className="px-8 py-3 rounded-xl bg-slate-900 text-white font-bold hover:opacity-90">Demoni Ko'rish</button>
+               </motion.div>
+
+               <motion.div 
+                  key={`img-${activeRole}`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={`aspect-[4/3] rounded-[2rem] border-4 p-2 shadow-2xl ${isDarkMode ? 'bg-[#111] border-white/10' : 'bg-slate-100 border-white'}`}
+               >
+                  {roleContent[activeRole].mockUI}
+               </motion.div>
+            </div>
+         </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 px-6">
+         <div className={`max-w-5xl mx-auto rounded-[3rem] p-16 text-center relative overflow-hidden ${
+            isDarkMode ? 'bg-gradient-to-br from-indigo-900 to-purple-900' : 'bg-gradient-to-br from-indigo-600 to-purple-600'
+         } text-white shadow-2xl`}>
+            <div className="relative z-10">
+               <h2 className="text-4xl md:text-6xl font-black mb-6">Kelajakni bugun boshlang</h2>
+               <p className="text-xl mb-10 opacity-90 max-w-2xl mx-auto">14 kunlik bepul sinov. Kredit karta shart emas.</p>
+               <button onClick={() => navigate('/login')} className="px-10 py-5 rounded-2xl font-bold text-xl bg-white text-indigo-600 hover:bg-indigo-50 shadow-xl transition-all hover:scale-105">
                   Hoziroq Ro'yxatdan O'ting
                </button>
             </div>
-         </motion.div>
+         </div>
       </section>
 
-      {/* --- FOOTER --- */}
+      {/* FOOTER */}
       <footer className={`py-12 px-6 border-t ${isDarkMode ? 'border-white/5 bg-[#050505]' : 'border-slate-100 bg-white'}`}>
-         <div className="max-w-7xl mx-auto">
-           <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12">
-              <div className="flex items-center gap-2">
-                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isDarkMode ? 'bg-indigo-600 text-white' : 'bg-indigo-600 text-white'}`}>
-                    <School className="w-5 h-5" />
-                 </div>
-                 <span className="font-bold text-lg">EduNexus</span>
-              </div>
-              
-              <div className="flex gap-8">
-                 <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Xavfsizlik</a>
-                 <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Yordam</a>
-                 <a href="#" className={`text-sm font-bold hover:text-indigo-500 transition-colors ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Aloqa</a>
-              </div>
-           </div>
-
-           {/* --- Developer Credits Section --- */}
-           <div className={`pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-6 ${isDarkMode ? 'border-white/10' : 'border-slate-200'}`}>
-              <div className={`text-sm font-medium ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                 © 2026 EduNexus Inc. Barcha huquqlar himoyalangan.
-              </div>
-              
-              <div className="flex items-center gap-6">
-                 <span className="text-sm font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500">
-                    Dev: Muhammadziyo
-                 </span>
-                 <div className="flex gap-4">
-                    <a 
-                      href="https://t.me/muhammadziyo_dev" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className={`p-2 rounded-lg transition-all hover:scale-110 ${isDarkMode ? 'hover:bg-blue-500/20 text-slate-400 hover:text-blue-400' : 'hover:bg-blue-50 text-slate-400 hover:text-blue-500'}`}
-                      title="Telegram"
-                    >
-                       <TelegramIcon className="w-5 h-5" />
-                    </a>
-                    <a 
-                      href="https://www.instagram.com/muhammadziyo.life" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className={`p-2 rounded-lg transition-all hover:scale-110 ${isDarkMode ? 'hover:bg-pink-500/20 text-slate-400 hover:text-pink-400' : 'hover:bg-pink-50 text-slate-400 hover:text-pink-500'}`}
-                      title="Instagram"
-                    >
-                       <Instagram className="w-5 h-5" />
-                    </a>
-                    <a 
-                      href="https://discord.com/users/muhammadziyo_dev" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className={`p-2 rounded-lg transition-all hover:scale-110 ${isDarkMode ? 'hover:bg-indigo-500/20 text-slate-400 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-500'}`}
-                      title="Discord"
-                    >
-                       <DiscordIcon className="w-5 h-5" />
-                    </a>
-                 </div>
-              </div>
-           </div>
+         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2 font-bold text-lg"><School className="w-5 h-5 text-indigo-600" /> EduNexus</div>
+            <div className="flex gap-8 text-sm font-bold opacity-60">
+               <a href="#">Xavfsizlik</a>
+               <a href="#">Yordam</a>
+               <a href="#">Aloqa</a>
+            </div>
+            <div className="text-sm font-medium opacity-50">© 2026 EduNexus Inc.</div>
          </div>
       </footer>
     </div>

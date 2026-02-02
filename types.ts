@@ -165,3 +165,34 @@ export interface GradeBookEntry {
     total: number;
   };
 }
+
+// --- NEW TYPES FOR CALENDAR & CHAT ---
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  type: 'EXAM' | 'DEADLINE' | 'HOLIDAY' | 'EVENT';
+  description?: string;
+  time?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  receiverId: string; // Could be a user ID or Group ID
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+}
+
+export interface ChatContact {
+  id: string;
+  name: string;
+  avatar: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  isOnline: boolean;
+  role: string;
+}

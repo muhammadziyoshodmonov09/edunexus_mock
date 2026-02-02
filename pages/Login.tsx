@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { User } from '../types';
+import React, { useState } from 'react';
+import { User, UserRole } from '../types';
 import { USERS } from '../services/mockData';
 import { AuthAPI } from '../services/api';
-import { School, ArrowRight, UserPlus, KeyRound, ChevronLeft, CheckCircle2, Sparkles, User as UserIcon, Lock } from 'lucide-react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { School, ArrowRight, KeyRound, ChevronLeft, CheckCircle2, User as UserIcon, Lock, Baby, GraduationCap, Hash, BadgeCheck, Mail } from 'lucide-react';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -11,21 +11,53 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [view, setView] = useState<'LOGIN' | 'REGISTER' | 'FORGOT'>('LOGIN');
+  const [loginMode, setLoginMode] = useState<'ACADEMIC' | 'PARENT'>('ACADEMIC');
+  
+  // Form States
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [extraData, setExtraData] = useState(''); // School Code or Child ID
+
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  // Handle Mouse Move for Parallax
+  // Motion Values for Mouse Interaction
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
   const handleMouseMove = (e: React.MouseEvent) => {
-    setMousePosition({
-      x: e.clientX / window.innerWidth,
-      y: e.clientY / window.innerHeight
-    });
+    const { clientX, clientY, currentTarget } = e;
+    const { width, height } = currentTarget.getBoundingClientRect();
+    const x = (clientX / width - 0.5) * 2;
+    const y = (clientY / height - 0.5) * 2;
+    mouseX.set(x);
+    mouseY.set(y);
   };
 
-  // Mock Login Handler
+  // Transforms
+  const blob1X = useTransform(mouseX, [-1, 1], [-50, 50]);
+  const blob1Y = useTransform(mouseY, [-1, 1], [-50, 50]);
+  const blob2X = useTransform(mouseX, [-1, 1], [50, -50]);
+  const blob2Y = useTransform(mouseY, [-1, 1], [50, -50]);
+  const blob3X = useTransform(mouseX, [-1, 1], [-30, 30]);
+  const blob3Y = useTransform(mouseY, [-1, 1], [30, -30]);
+  const rotateX = useTransform(mouseY, [-1, 1], [10, -10]);
+  const rotateY = useTransform(mouseX, [-1, 1], [-10, 10]);
+
+  // Styles
+  const themeColor = loginMode === 'ACADEMIC' ? 'indigo' : 'emerald';
+  const textColor = loginMode === 'ACADEMIC' ? 'text-indigo-600' : 'text-emerald-600';
+  const buttonColor = loginMode === 'ACADEMIC' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700';
+  const shadowColor = loginMode === 'ACADEMIC' ? 'shadow-indigo-500/30' : 'shadow-emerald-500/30';
+
+  // Filter Quick Users
+  const quickUsers = USERS.filter(u => 
+    loginMode === 'ACADEMIC' 
+      ? u.role !== UserRole.PARENT 
+      : u.role === UserRole.PARENT
+  ).slice(0, 4);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -33,7 +65,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     try {
       const user = USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (user) {
-        await new Promise(r => setTimeout(r, 800)); // fake delay
+        if (loginMode === 'PARENT' && user.role !== UserRole.PARENT) {
+           setMessage("Bu ota-onalar uchun kirish qismi. Iltimos, akademik bo'limga o'ting.");
+           setIsLoading(false);
+           return;
+        }
+        if (loginMode === 'ACADEMIC' && user.role === UserRole.PARENT) {
+           setMessage("Ota-onalar uchun maxsus bo'limga o'ting.");
+           setIsLoading(false);
+           return;
+        }
+        await new Promise(r => setTimeout(r, 800)); 
         onLogin(user);
       } else {
         setMessage('Noto\'g\'ri ma\'lumotlar. Demo hisoblarni sinab ko\'ring.');
@@ -48,10 +90,32 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    // Simulate Registration API Call
     setTimeout(() => {
+        const newUser: User = {
+            id: `new_${Date.now()}`,
+            name: name,
+            email: email,
+            role: loginMode === 'PARENT' ? UserRole.PARENT : UserRole.STUDENT,
+            schoolId: 's1', // Default mock school
+            avatarUrl: `https://ui-avatars.com/api/?name=${name}&background=random`,
+            status: 'ACTIVE',
+            lastActive: 'Hozirgina',
+            childrenIds: loginMode === 'PARENT' ? ['u1'] : undefined // Mock linking to student 'u1'
+        };
+
         setIsLoading(false);
-        setMessage('Ro\'yxatdan o\'tish muvaffaqiyatli! Direktor tasdiqlashini kuting.');
-        setTimeout(() => setView('LOGIN'), 3000);
+        if (loginMode === 'PARENT') {
+           setMessage('Ota-ona hisobi yaratildi! Farzandingiz muvaffaqiyatli ulandi.');
+        } else {
+           setMessage('Ro\'yxatdan o\'tish muvaffaqiyatli! Xush kelibsiz.');
+        }
+        
+        // Auto Login after short delay
+        setTimeout(() => {
+            onLogin(newUser);
+        }, 1500);
     }, 1500);
   };
 
@@ -65,259 +129,205 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const formVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.5, ease: "easeOut" } },
-    exit: { opacity: 0, x: 20, transition: { duration: 0.3 } }
+    visible: { opacity: 1, x: 0 }
   };
 
   return (
-    <div className="min-h-screen flex bg-white font-['Plus_Jakarta_Sans'] overflow-hidden" onMouseMove={handleMouseMove}>
-      
-      {/* Left Section - Form */}
-      <div className="w-full lg:w-[45%] flex flex-col justify-center px-8 sm:px-16 xl:px-24 relative z-10 bg-white">
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="absolute top-8 left-8 sm:left-16 xl:left-24 flex items-center gap-2.5 cursor-pointer"
-          onClick={() => window.location.href = '/'}
-        >
-           <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-              <School className="text-white w-6 h-6" />
-           </div>
-           <span className="text-2xl font-extrabold text-slate-900 tracking-tight">EduNexus</span>
-        </motion.div>
-
-        <div className="max-w-md w-full mx-auto">
-          <AnimatePresence mode="wait">
-            {message && (
-               <motion.div 
-                 initial={{ opacity: 0, y: -20, height: 0 }}
-                 animate={{ opacity: 1, y: 0, height: 'auto' }}
-                 exit={{ opacity: 0, height: 0 }}
-                 className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-semibold border ${message.includes('muvaffaqiyatli') ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 'bg-red-50 text-red-700 border-red-100'}`}
-               >
-                 {message.includes('muvaffaqiyatli') ? <CheckCircle2 className="w-5 h-5"/> : <KeyRound className="w-5 h-5"/>}
-                 {message}
-               </motion.div>
-            )}
-
-            {view === 'REGISTER' ? (
-               <motion.div 
-                 key="register"
-                 variants={formVariants}
-                 initial="hidden"
-                 animate="visible"
-                 exit="exit"
-               >
-                  <button onClick={() => setView('LOGIN')} className="group flex items-center gap-2 text-slate-500 hover:text-indigo-600 text-sm font-bold mb-8 transition-colors">
-                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform"/> Kirishga qaytish
-                  </button>
-                  <h2 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Hisob Yaratish</h2>
-                  <p className="text-slate-500 mb-8 font-medium">EduNexus bilan ta'lim sayohatingizni boshlang.</p>
-                  
-                  <form className="space-y-5" onSubmit={handleRegister}>
-                    <div className="space-y-4">
-                      {['To\'liq Ism', 'Email Manzil', 'Maktab Kodi', 'Parol'].map((label, idx) => (
-                        <motion.div 
-                          key={label} 
-                          initial={{ opacity: 0, y: 10 }} 
-                          animate={{ opacity: 1, y: 0 }} 
-                          transition={{ delay: 0.1 * idx }}
-                        >
-                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1">{label}</label>
-                          <div className="relative group">
-                              <input required type={label.includes('Parol') ? 'password' : 'text'} className="w-full pl-4 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800 placeholder:font-normal group-hover:bg-slate-100" />
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit" 
-                      disabled={isLoading} 
-                      className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-200 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
-                    >
-                      {isLoading ? 'Yaratilmoqda...' : 'Hisob Yaratish'}
-                    </motion.button>
-                  </form>
-               </motion.div>
-            ) : view === 'FORGOT' ? (
-               <motion.div 
-                 key="forgot"
-                 variants={formVariants}
-                 initial="hidden"
-                 animate="visible"
-                 exit="exit"
-               >
-                  <button onClick={() => setView('LOGIN')} className="group flex items-center gap-2 text-slate-500 hover:text-indigo-600 text-sm font-bold mb-8 transition-colors">
-                    <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform"/> Kirishga qaytish
-                  </button>
-                  <div className="w-16 h-16 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 text-indigo-600 shadow-sm border border-indigo-100">
-                    <KeyRound className="w-8 h-8" />
-                  </div>
-                  <h2 className="text-3xl font-extrabold text-slate-900 mb-2 tracking-tight">Parolni Tiklash</h2>
-                  <p className="text-slate-500 mb-8 font-medium">Email manzilingizga tiklash havolasini yuboramiz.</p>
-                  <form className="space-y-6" onSubmit={handleForgot}>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1">Email Manzil</label>
-                      <input required type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800" placeholder="aziza@maktab.uz" />
-                    </div>
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit" 
-                      disabled={isLoading} 
-                      className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-200 disabled:opacity-70"
-                    >
-                      {isLoading ? 'Yuborilmoqda...' : 'Havolani Yuborish'}
-                    </motion.button>
-                  </form>
-               </motion.div>
-            ) : (
-              <motion.div 
-                key="login"
-                variants={formVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-              >
-                <div className="mb-8">
-                   <h2 className="text-4xl font-extrabold text-slate-900 mb-3 tracking-tight">Xush kelibsiz</h2>
-                   <p className="text-slate-500 font-medium text-lg">Platformaga kirish uchun ma'lumotlaringizni kiriting.</p>
-                </div>
-                
-                {/* Quick Login - Enhanced */}
-                <div className="mb-8 p-1 bg-slate-50 border border-slate-200 rounded-2xl">
-                   <div className="grid grid-cols-2 gap-1">
-                     {USERS.slice(0, 4).map((user) => (
-                       <button
-                         key={user.id}
-                         onClick={() => onLogin(user)}
-                         className="text-left px-3 py-2.5 bg-white border border-transparent hover:border-slate-200 rounded-xl hover:shadow-md transition-all group relative overflow-hidden"
-                       >
-                         <span className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-indigo-500 transition-colors relative z-10">{user.role}</span>
-                         <span className="block text-xs font-bold text-slate-700 truncate relative z-10">{user.name}</span>
-                         <div className="absolute inset-0 bg-indigo-50 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                       </button>
-                     ))}
-                   </div>
-                </div>
-
-                <form className="space-y-5" onSubmit={handleLogin}>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1">Email Manzil</label>
-                      <div className="relative">
-                         <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                         <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800 placeholder-slate-400" placeholder="email@school.edu" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5 ml-1">
-                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Parol</label>
-                         <button type="button" onClick={() => setView('FORGOT')} className="text-xs font-bold text-indigo-600 hover:text-indigo-700 underline">Parolni unutdingizmi?</button>
-                      </div>
-                      <div className="relative">
-                         <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                         <input type="password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 outline-none transition-all font-semibold text-slate-800 placeholder-slate-400" placeholder="••••••••" />
-                      </div>
-                    </div>
-                    <motion.button 
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit" 
-                      disabled={isLoading} 
-                      className="w-full bg-indigo-600 text-white py-3.5 rounded-xl font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/30 disabled:opacity-70 mt-2 flex items-center justify-center gap-2"
-                    >
-                      {isLoading ? 'Kirilmoqda...' : (
-                        <>Kirish <ArrowRight className="w-5 h-5"/></>
-                      )}
-                    </motion.button>
-                </form>
-
-                <div className="mt-8 text-center">
-                   <p className="text-sm font-medium text-slate-500">Hisobingiz yo'qmi?</p>
-                   <button onClick={() => setView('REGISTER')} className="mt-2 text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
-                      Ro'yxatdan o'tish
-                   </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+    <div 
+      className={`min-h-screen w-full flex items-center justify-center relative overflow-hidden bg-slate-50 transition-colors duration-500 ${loginMode === 'PARENT' ? 'bg-[#F0FDF4]' : 'bg-[#F8FAFC]'}`}
+      onMouseMove={handleMouseMove}
+    >
+      {/* Background Blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+         <motion.div style={{ x: blob1X, y: blob1Y }} className={`absolute top-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full blur-[120px] opacity-40 ${loginMode === 'PARENT' ? 'bg-emerald-300' : 'bg-indigo-300'}`}></motion.div>
+         <motion.div style={{ x: blob2X, y: blob2Y }} className={`absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[120px] opacity-40 ${loginMode === 'PARENT' ? 'bg-teal-300' : 'bg-purple-300'}`}></motion.div>
+         <motion.div style={{ x: blob3X, y: blob3Y }} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-white rounded-full blur-[100px] opacity-60"></motion.div>
       </div>
 
-      {/* Right Section - Interactive Visual */}
-      <div className="hidden lg:flex w-[55%] bg-[#0F172A] relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
-        
-        {/* Moving Blobs based on mouse */}
-        <motion.div 
-          animate={{ x: mousePosition.x * 20, y: mousePosition.y * 20 }}
-          className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-[120px] opacity-40"
-        />
-        <motion.div 
-          animate={{ x: mousePosition.x * -30, y: mousePosition.y * -30 }}
-          className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-gradient-to-tr from-blue-600 to-cyan-500 rounded-full blur-[120px] opacity-40"
-        />
-        
-        {/* Glass Card 3D Effect */}
-        <motion.div 
-          style={{ 
-             rotateX: (mousePosition.y - 0.5) * -10,
-             rotateY: (mousePosition.x - 0.5) * 10,
-          }}
-          className="relative z-10 w-full max-w-lg p-10 perspective-1000"
-        >
-           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden group">
-             {/* Shine Effect */}
-             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+      <motion.div 
+        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+        className="relative z-10 w-full max-w-5xl h-[600px] bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-white/50 flex overflow-hidden"
+      >
+         {/* Left Side: Form */}
+         <div className="flex-1 p-12 flex flex-col relative z-20">
+            <div className="mb-8 flex items-center gap-2">
+               <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-lg ${buttonColor}`}>
+                  <School className="w-6 h-6" />
+               </div>
+               <span className="font-black text-2xl tracking-tight text-slate-900">EduNexus</span>
+            </div>
 
-             <div className="flex items-center gap-4 mb-8">
-                <div className="flex -space-x-4">
-                   {[1,2,3,4].map(i => (
-                      <motion.img 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + i * 0.1 }}
-                        key={i} 
-                        src={`https://picsum.photos/100?random=${i}`} 
-                        className="w-12 h-12 rounded-full border-2 border-slate-900 object-cover" 
-                      />
-                   ))}
-                   <div className="w-12 h-12 rounded-full border-2 border-slate-900 bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
-                      +2k
-                   </div>
-                </div>
-                <div className="text-white">
-                   <p className="text-sm font-medium opacity-80">Jamoaga qo'shiling</p>
-                   <p className="font-bold text-lg">Yangi davr ta'limi</p>
-                </div>
-             </div>
+            <div className="flex-1 flex flex-col justify-center max-w-sm mx-auto w-full">
+               <h2 className="text-3xl font-black text-slate-900 mb-2">
+                  {view === 'LOGIN' ? 'Xush Kelibsiz!' : view === 'REGISTER' ? 'Ro\'yxatdan O\'tish' : 'Parolni Tiklash'}
+               </h2>
+               <p className="text-slate-500 mb-8 font-medium">
+                  {view === 'LOGIN' ? 'Davom etish uchun hisobingizga kiring.' : view === 'REGISTER' ? 'Yangi imkoniyatlar dunyosiga qo\'shiling.' : 'Emailingizni kiriting va biz tiklash havolasini yuboramiz.'}
+               </p>
 
-             <h2 className="text-4xl font-bold text-white mb-6 leading-tight">
-               "Maktab boshqaruvini <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-purple-300">keyingi bosqichga</span> olib chiqing."
-             </h2>
-             
-             <div className="flex items-center gap-4 mt-8 pt-8 border-t border-white/10">
-                <div className="flex-1">
-                   <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }}
-                        animate={{ width: "85%" }}
-                        transition={{ duration: 1.5, delay: 0.8 }}
-                        className="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"
-                      ></motion.div>
-                   </div>
-                   <div className="flex justify-between mt-2 text-xs text-indigo-200 font-medium">
-                      <span>Samaradorlik</span>
-                      <span>+85%</span>
-                   </div>
-                </div>
-             </div>
-           </div>
-        </motion.div>
-      </div>
+               <form onSubmit={view === 'LOGIN' ? handleLogin : view === 'REGISTER' ? handleRegister : handleForgot} className="space-y-4">
+                  <AnimatePresence mode="wait">
+                     <motion.div
+                        key={view}
+                        variants={formVariants}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        className="space-y-4"
+                     >
+                        {view === 'REGISTER' && (
+                           <div className="relative group">
+                              <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                              <input 
+                                 type="text" 
+                                 placeholder="To'liq Ism"
+                                 className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                 required
+                                 value={name}
+                                 onChange={(e) => setName(e.target.value)}
+                              />
+                           </div>
+                        )}
+
+                        <div className="relative group">
+                           <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                              {view === 'REGISTER' && loginMode === 'PARENT' ? <Baby className="w-5 h-5 text-slate-400" /> : <Mail className="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />}
+                           </div>
+                           <input 
+                              type="email" 
+                              placeholder="Email Manzil"
+                              className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                              required
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                           />
+                        </div>
+
+                        {view !== 'FORGOT' && (
+                           <div className="relative group">
+                              <KeyRound className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                              <input 
+                                 type="password" 
+                                 placeholder="Parol"
+                                 className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                 required
+                                 value={password}
+                                 onChange={(e) => setPassword(e.target.value)}
+                              />
+                           </div>
+                        )}
+
+                        {view === 'REGISTER' && (
+                           <div className="relative group">
+                              <div className="absolute left-4 top-1/2 -translate-y-1/2">
+                                 {loginMode === 'PARENT' ? <Hash className="w-5 h-5 text-slate-400" /> : <School className="w-5 h-5 text-slate-400" />}
+                              </div>
+                              <input 
+                                 type="text" 
+                                 placeholder={loginMode === 'PARENT' ? "Farzand ID raqami" : "Maktab Kodi"}
+                                 className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                 required={view === 'REGISTER'}
+                                 value={extraData}
+                                 onChange={(e) => setExtraData(e.target.value)}
+                              />
+                           </div>
+                        )}
+                     </motion.div>
+                  </AnimatePresence>
+
+                  {message && (
+                     <div className="p-3 rounded-lg bg-red-50 text-red-600 text-xs font-bold border border-red-100 flex items-center gap-2">
+                        <BadgeCheck className="w-4 h-4" /> {message}
+                     </div>
+                  )}
+
+                  <button 
+                     type="submit" 
+                     disabled={isLoading}
+                     className={`w-full py-3.5 rounded-xl text-white font-bold shadow-lg flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed ${buttonColor} ${shadowColor}`}
+                  >
+                     {isLoading ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                     ) : (
+                        <>
+                           {view === 'LOGIN' ? 'Kirish' : view === 'REGISTER' ? 'Ro\'yxatdan O\'tish' : 'Havolani Yuborish'}
+                           <ArrowRight className="w-5 h-5" />
+                        </>
+                     )}
+                  </button>
+               </form>
+
+               <div className="mt-6 flex items-center justify-between text-xs font-bold text-slate-500">
+                  {view === 'LOGIN' ? (
+                     <>
+                        <button onClick={() => setView('REGISTER')} className="hover:text-indigo-600 transition-colors">Ro'yxatdan o'tish</button>
+                        <button onClick={() => setView('FORGOT')} className="hover:text-indigo-600 transition-colors">Parolni unutdingizmi?</button>
+                     </>
+                  ) : (
+                     <button onClick={() => setView('LOGIN')} className="flex items-center gap-1 hover:text-indigo-600 transition-colors">
+                        <ChevronLeft className="w-3 h-3" /> Ortga qaytish
+                     </button>
+                  )}
+               </div>
+            </div>
+         </div>
+
+         {/* Right Side: Visuals */}
+         <div className={`hidden lg:flex flex-1 relative overflow-hidden transition-colors duration-500 flex-col items-center justify-center p-12 text-white ${
+            loginMode === 'ACADEMIC' ? 'bg-[#0F172A]' : 'bg-[#064E3B]'
+         }`}>
+            {/* Mode Switcher */}
+            <div className="absolute top-8 right-8 z-20 flex bg-white/10 backdrop-blur-md p-1 rounded-xl border border-white/10">
+               <button 
+                  onClick={() => setLoginMode('ACADEMIC')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${loginMode === 'ACADEMIC' ? 'bg-white text-indigo-900 shadow-md' : 'text-white/70 hover:bg-white/10'}`}
+               >
+                  <GraduationCap className="w-4 h-4 mb-1 mx-auto" />
+                  Akademik
+               </button>
+               <button 
+                  onClick={() => setLoginMode('PARENT')}
+                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${loginMode === 'PARENT' ? 'bg-white text-emerald-900 shadow-md' : 'text-white/70 hover:bg-white/10'}`}
+               >
+                  <Baby className="w-4 h-4 mb-1 mx-auto" />
+                  Ota-ona
+               </button>
+            </div>
+
+            {/* Quick Login */}
+            <div className="w-full max-w-sm relative z-10">
+               <h3 className="text-2xl font-black mb-6 text-center">Tezkor Kirish (Demo)</h3>
+               <div className="grid grid-cols-1 gap-3">
+                  {quickUsers.map(u => (
+                     <button 
+                        key={u.id}
+                        onClick={() => {
+                           setEmail(u.email);
+                           setPassword('demo123'); // Assume demo password
+                           if ((loginMode === 'PARENT' && u.role !== 'PARENT') || (loginMode === 'ACADEMIC' && u.role === 'PARENT')) {
+                              setLoginMode(u.role === 'PARENT' ? 'PARENT' : 'ACADEMIC');
+                           }
+                        }}
+                        className="flex items-center gap-4 p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all hover:scale-105 active:scale-95 text-left group"
+                     >
+                        <img src={u.avatarUrl} className="w-10 h-10 rounded-lg bg-white/10 object-cover" alt={u.name} />
+                        <div>
+                           <p className="font-bold text-sm text-white group-hover:text-yellow-300 transition-colors">{u.name}</p>
+                           <p className="text-[10px] text-white/50 font-bold uppercase tracking-wider">{u.role}</p>
+                        </div>
+                        <div className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                           <ArrowRight className="w-4 h-4 text-white" />
+                        </div>
+                     </button>
+                  ))}
+               </div>
+            </div>
+
+            {/* Decor */}
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay pointer-events-none"></div>
+            <div className={`absolute -bottom-20 -left-20 w-80 h-80 rounded-full blur-[80px] opacity-50 ${loginMode === 'ACADEMIC' ? 'bg-indigo-500' : 'bg-emerald-500'}`}></div>
+         </div>
+      </motion.div>
     </div>
   );
 };

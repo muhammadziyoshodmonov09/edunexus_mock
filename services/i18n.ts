@@ -32,6 +32,9 @@ export const translations = {
     buyCourse: 'Enroll Now',
     price: 'Price',
     liveZoom: 'Live Zoom Classes',
+    gamification: 'Game Center',
+    resources: 'Resources',
+    management: 'Management ERP',
   },
   uz: {
     dashboard: 'Boshqaruv Paneli',
@@ -64,6 +67,9 @@ export const translations = {
     buyCourse: 'Sotib Olish',
     price: 'Narx',
     liveZoom: 'Jonli Zoom Darslar',
+    gamification: 'O\'yin Markazi',
+    resources: 'Resurslar',
+    management: 'Boshqaruv ERP',
   },
   ru: {
     dashboard: 'Панель управления',
@@ -96,8 +102,10 @@ export const translations = {
     buyCourse: 'Купить курс',
     price: 'Цена',
     liveZoom: 'Живые уроки Zoom',
+    gamification: 'Игровой Центр',
+    resources: 'Ресурсы',
+    management: 'Управление ERP',
   },
-  // Add other languages as needed with fallbacks in context
   es: { dashboard: 'Tablero', grades: 'Calificaciones', paidCourses: 'Cursos Premium', semester1: 'Semestre 1', semester2: 'Semestre 2', parentControl: 'Control Parental' },
   fr: { dashboard: 'Tableau de bord', grades: 'Notes', paidCourses: 'Cours Premium', semester1: 'Semestre 1', semester2: 'Semestre 2', parentControl: 'Contrôle Parental' },
 };

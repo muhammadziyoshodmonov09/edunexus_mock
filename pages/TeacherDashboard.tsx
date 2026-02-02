@@ -3,10 +3,12 @@ import { User, Course } from '../types';
 import { COURSES, getSchoolStats } from '../services/mockData';
 import { StatCard, PerformanceChart } from '../components/Widgets';
 import { generateLessonPlan } from '../services/geminiService';
-import { Plus, Users, BookOpen, BrainCircuit, X, Sparkles } from 'lucide-react';
+import { Plus, Users, BookOpen, BrainCircuit, X, Sparkles, Activity, Signal, LayoutTemplate } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const TeacherDashboard: React.FC<{ user: User }> = ({ user }) => {
+  const navigate = useNavigate();
   const [showAiModal, setShowAiModal] = useState(false);
   const [topic, setTopic] = useState('');
   const [generatedPlan, setGeneratedPlan] = useState('');
@@ -39,19 +41,43 @@ const TeacherDashboard: React.FC<{ user: User }> = ({ user }) => {
            <h1 className="text-3xl font-black text-slate-800">O'qituvchi Boshqaruv Paneli</h1>
            <p className="text-slate-500 font-medium">Sinflaringiz va o'quv dasturlaringiz nazorati.</p>
         </div>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setShowAiModal(true)}
-          className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-6 py-3 rounded-2xl font-bold transition-all shadow-lg shadow-indigo-500/30"
-        >
-          <BrainCircuit className="w-5 h-5" />
-          <span>AI Dars Rejalashtirgich</span>
-        </motion.button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((s, i) => <StatCard key={i} metric={s} />)}
+      </div>
+
+      {/* --- NEW IRON MAN TOOLS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <motion.div 
+            whileHover={{ scale: 1.02 }}
+            onClick={() => navigate('/teacher/syllabus')}
+            className="cursor-pointer bg-gradient-to-br from-indigo-900 to-slate-900 rounded-[2rem] p-8 text-white relative overflow-hidden group shadow-xl"
+         >
+            <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-[60px] group-hover:bg-indigo-500/30 transition-colors"></div>
+            <div className="relative z-10">
+               <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-4 backdrop-blur-md border border-white/20">
+                  <LayoutTemplate className="w-6 h-6 text-indigo-300" />
+               </div>
+               <h3 className="text-2xl font-bold mb-2">Neural Syllabus</h3>
+               <p className="text-slate-400 text-sm">AI yordamida dars rejalarini LEGO kabi yiging. Vizual konstruktor.</p>
+            </div>
+         </motion.div>
+
+         <motion.div 
+            whileHover={{ scale: 1.02 }}
+            onClick={() => navigate('/teacher/radar')}
+            className="cursor-pointer bg-gradient-to-br from-emerald-900 to-slate-900 rounded-[2rem] p-8 text-white relative overflow-hidden group shadow-xl"
+         >
+            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px] group-hover:bg-emerald-500/30 transition-colors"></div>
+            <div className="relative z-10">
+               <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-4 backdrop-blur-md border border-white/20">
+                  <Signal className="w-6 h-6 text-emerald-300 animate-pulse" />
+               </div>
+               <h3 className="text-2xl font-bold mb-2">Classroom Pulse</h3>
+               <p className="text-slate-400 text-sm">Sinf energiyasini real vaqtda kuzating. Kim chalg'idi? Kim faol?</p>
+            </div>
+         </motion.div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

@@ -1,22 +1,25 @@
 import React, { useState } from 'react';
 import { User } from '../../types';
-import { Check, X, Clock, Mail, MoreHorizontal, Send, Users } from 'lucide-react';
+import { Check, X, Clock, Mail, MoreHorizontal, Send, Users, LayoutGrid, List } from 'lucide-react';
 import { CommunicationAPI } from '../../services/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TeacherStudents: React.FC = () => {
+  const [viewMode, setViewMode] = useState<'LIST' | 'GRID'>('GRID');
   const [showAnnouncement, setShowAnnouncement] = useState(false);
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
 
-  // Mock student list for a class
-  const students = Array.from({ length: 8 }, (_, i) => ({
+  // Mock student list with seat positions for Visual Classroom
+  const [students, setStudents] = useState(Array.from({ length: 12 }, (_, i) => ({
     id: `st${i}`,
-    name: ['Alex Johnson', 'Sam Smith', 'Jordan Lee', 'Casey West', 'Jamie Doe', 'Riley Reid', 'Taylor Swift', 'Morgan Free'][i],
+    name: ['Aziz Rahimov', 'Malika Karimova', 'Jasur Aliyev', 'Dono Sobirova', 'Bobur Tursunov', 'Laylo Usmonova', 'Sardor Qodirov', 'Zarina Yusupova', 'Timur Valiyev', 'Nigora T.', 'Davron K.', 'Sevara M.'][i],
     email: `student${i}@school.edu`,
     attendanceRate: 85 + Math.floor(Math.random() * 15),
     lastGrade: 70 + Math.floor(Math.random() * 30),
-    status: Math.random() > 0.8 ? 'Absent' : 'Present'
-  }));
+    status: 'Present' as 'Present' | 'Absent' | 'Late',
+    seat: i // seat index
+  })));
 
   const handleSendAnnouncement = async () => {
     if (!message) return;
@@ -28,97 +31,141 @@ const TeacherStudents: React.FC = () => {
     alert('E\'lon muvaffaqiyatli yuborildi!');
   };
 
+  const toggleAttendance = (id: string) => {
+     setStudents(prev => prev.map(s => {
+        if (s.id !== id) return s;
+        const nextStatus = s.status === 'Present' ? 'Absent' : s.status === 'Absent' ? 'Late' : 'Present';
+        return { ...s, status: nextStatus };
+     }));
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-end gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Sinf Ro'yxati</h1>
-          <p className="text-slate-500">Talabalarni boshqarish va davomatni olish.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Sinf Jurnali</h1>
+          <p className="text-slate-500">Talabalar davomati va faolligini boshqaring.</p>
         </div>
-        <div className="flex gap-2">
-           <button className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 font-medium hover:bg-slate-50">
-             CSV Eksport
+        <div className="flex gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+           <button 
+             onClick={() => setViewMode('LIST')}
+             className={`p-2 rounded-lg transition-all ${viewMode === 'LIST' ? 'bg-slate-100 text-slate-900' : 'text-slate-400 hover:text-slate-600'}`}
+           >
+              <List className="w-5 h-5" />
            </button>
            <button 
-             onClick={() => setShowAnnouncement(true)}
-             className="px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 shadow-sm flex items-center gap-2"
+             onClick={() => setViewMode('GRID')}
+             className={`p-2 rounded-lg transition-all ${viewMode === 'GRID' ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
            >
-             <Mail className="w-4 h-4" /> E'lon Yuborish
+              <LayoutGrid className="w-5 h-5" />
            </button>
         </div>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-           <h3 className="font-bold text-slate-800">Davomat: {new Date().toLocaleDateString()}</h3>
-           <button className="text-sm text-indigo-600 font-medium hover:underline">Hammasini Bor Deb Belgilash</button>
-        </div>
-        <table className="w-full text-left text-sm">
-          <thead className="text-slate-500 font-medium border-b border-slate-200">
-            <tr>
-              <th className="px-6 py-4">Talaba</th>
-              <th className="px-6 py-4">Bugungi Holat</th>
-              <th className="px-6 py-4">Davomat Darajasi</th>
-              <th className="px-6 py-4">Oxirgi Natija</th>
-              <th className="px-6 py-4 text-right">Amallar</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {students.map((student) => (
-              <tr key={student.id} className="hover:bg-slate-50">
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">
-                      {student.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-900">{student.name}</p>
-                      <p className="text-xs text-slate-500">{student.email}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex gap-1">
-                    <button className={`p-1.5 rounded ${student.status === 'Present' ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-500' : 'bg-slate-100 text-slate-400 hover:bg-emerald-50'}`} title="Bor">
-                      <Check className="w-4 h-4" />
-                    </button>
-                    <button className={`p-1.5 rounded ${student.status === 'Absent' ? 'bg-red-100 text-red-700 ring-2 ring-red-500' : 'bg-slate-100 text-slate-400 hover:bg-red-50'}`} title="Yo'q">
-                      <X className="w-4 h-4" />
-                    </button>
-                    <button className="p-1.5 rounded bg-slate-100 text-slate-400 hover:bg-orange-50 hover:text-orange-600" title="Kechikdi">
-                      <Clock className="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                   <div className="flex items-center gap-2">
-                     <span className="font-medium text-slate-700">{student.attendanceRate}%</span>
-                     <div className="w-16 bg-slate-200 rounded-full h-1">
-                        <div className={`h-1 rounded-full ${student.attendanceRate > 90 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{ width: `${student.attendanceRate}%` }}></div>
-                     </div>
-                   </div>
-                </td>
-                <td className="px-6 py-4">
-                   <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold ${
-                     student.lastGrade >= 90 ? 'bg-emerald-100 text-emerald-700' : 
-                     student.lastGrade >= 75 ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
-                   }`}>
-                     Oxirgi Baho: {student.lastGrade}%
-                   </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                   <button className="p-2 text-slate-400 hover:text-indigo-600">
-                      <Mail className="w-4 h-4" />
-                   </button>
-                   <button className="p-2 text-slate-400 hover:text-slate-600">
-                      <MoreHorizontal className="w-4 h-4" />
-                   </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex justify-between items-center mb-4">
+         <div className="flex gap-2">
+            <button 
+               onClick={() => setShowAnnouncement(true)}
+               className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all"
+            >
+               <Mail className="w-4 h-4" /> E'lon Yuborish
+            </button>
+         </div>
+         <div className="text-sm font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-lg">
+            Jami: {students.length} o'quvchi
+         </div>
       </div>
+
+      {viewMode === 'GRID' ? (
+         <div className="bg-slate-200/50 p-8 rounded-[2rem] border-2 border-dashed border-slate-300 relative min-h-[500px]">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-8 py-2 rounded-b-xl text-xs font-bold uppercase tracking-widest shadow-lg">
+               Doska
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-12">
+               <AnimatePresence>
+               {students.map((student) => (
+                  <motion.div 
+                     layout
+                     initial={{ scale: 0.9, opacity: 0 }}
+                     animate={{ scale: 1, opacity: 1 }}
+                     key={student.id}
+                     onClick={() => toggleAttendance(student.id)}
+                     className={`relative bg-white p-4 rounded-2xl border-b-4 cursor-pointer transition-all hover:-translate-y-1 active:translate-y-0 select-none group ${
+                        student.status === 'Present' ? 'border-emerald-500 shadow-emerald-500/10' :
+                        student.status === 'Absent' ? 'border-red-500 shadow-red-500/10' :
+                        'border-amber-500 shadow-amber-500/10'
+                     } shadow-xl`}
+                  >
+                     <div className="flex justify-between items-start mb-3">
+                        <div className={`w-3 h-3 rounded-full ${
+                           student.status === 'Present' ? 'bg-emerald-500' :
+                           student.status === 'Absent' ? 'bg-red-500' : 'bg-amber-500'
+                        } animate-pulse`}></div>
+                        <div className="text-[10px] font-bold text-slate-400">#{student.seat + 1}</div>
+                     </div>
+                     <div className="text-center mb-2">
+                        <div className="w-16 h-16 mx-auto bg-slate-100 rounded-full mb-2 overflow-hidden border-2 border-white shadow-sm">
+                           <img src={`https://ui-avatars.com/api/?name=${student.name}&background=random`} alt={student.name} />
+                        </div>
+                        <h3 className="font-bold text-slate-900 text-sm">{student.name}</h3>
+                        <p className="text-[10px] text-slate-500 font-medium bg-slate-50 inline-block px-2 rounded mt-1">{student.attendanceRate}% Davomat</p>
+                     </div>
+                     <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl flex items-center justify-center backdrop-blur-[1px]">
+                        <span className="bg-white px-3 py-1 rounded-full text-xs font-bold shadow-sm">
+                           {student.status === 'Present' ? 'Yo\'q qilish' : student.status === 'Absent' ? 'Kechikdi' : 'Bor qilish'}
+                        </span>
+                     </div>
+                  </motion.div>
+               ))}
+               </AnimatePresence>
+            </div>
+            
+            <div className="mt-8 flex justify-center gap-6">
+               <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                  <div className="w-3 h-3 rounded-full bg-emerald-500"></div> Bor
+               </div>
+               <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div> Yo'q
+               </div>
+               <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                  <div className="w-3 h-3 rounded-full bg-amber-500"></div> Kechikdi
+               </div>
+            </div>
+         </div>
+      ) : (
+         <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+           <table className="w-full text-left text-sm">
+             <thead className="text-slate-500 font-medium border-b border-slate-200 bg-slate-50">
+               <tr>
+                 <th className="px-6 py-4">Talaba</th>
+                 <th className="px-6 py-4">Bugungi Holat</th>
+                 <th className="px-6 py-4">Reyting</th>
+                 <th className="px-6 py-4 text-right">Amallar</th>
+               </tr>
+             </thead>
+             <tbody className="divide-y divide-slate-100">
+               {students.map((student) => (
+                 <tr key={student.id} className="hover:bg-slate-50">
+                   <td className="px-6 py-4 font-semibold text-slate-900">{student.name}</td>
+                   <td className="px-6 py-4">
+                     <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
+                        student.status === 'Present' ? 'bg-emerald-100 text-emerald-700' :
+                        student.status === 'Absent' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                     }`}>
+                        {student.status}
+                     </span>
+                   </td>
+                   <td className="px-6 py-4 font-bold text-slate-700">{student.lastGrade} Ball</td>
+                   <td className="px-6 py-4 text-right">
+                      <button onClick={() => toggleAttendance(student.id)} className="text-indigo-600 font-bold text-xs hover:underline">O'zgartirish</button>
+                   </td>
+                 </tr>
+               ))}
+             </tbody>
+           </table>
+         </div>
+      )}
 
       {/* Announcement Modal */}
       {showAnnouncement && (
@@ -130,7 +177,7 @@ const TeacherStudents: React.FC = () => {
               </div>
               <div>
                  <h3 className="font-bold text-slate-900">E'lon Yuborish</h3>
-                 <p className="text-xs text-slate-500">Ushbu sinfdagi barcha 24 talabani xabardor qilish.</p>
+                 <p className="text-xs text-slate-500">Sinf guruhiga xabar yuborish.</p>
               </div>
             </div>
             <div className="p-6">

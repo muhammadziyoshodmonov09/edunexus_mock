@@ -1,4 +1,4 @@
-import { User, UserRole, School, Course, Lesson, Assignment, Certificate, AttendanceRecord, Notification, StatMetric, Submission, QuizQuestion, AuditLog, Invoice, GradeBookEntry } from '../types';
+import { User, UserRole, School, Course, Lesson, Assignment, Certificate, AttendanceRecord, Notification, StatMetric, Submission, QuizQuestion, AuditLog, Invoice, GradeBookEntry, CalendarEvent, ChatContact, ChatMessage } from '../types';
 
 export const SCHOOLS: School[] = [
   { id: 's1', name: 'Lincoln High', plan: 'ENTERPRISE', studentCount: 1250, teacherCount: 85, logo: 'https://picsum.photos/id/1/200', status: 'ACTIVE', joinedDate: '2024-08-15', revenue: 2500 },
@@ -86,6 +86,27 @@ export const GRADEBOOK: GradeBookEntry[] = [
     semester1: { current: 30, midterm: 25, final: 21, total: 76 },
     semester2: { current: 0, midterm: 0, final: 0, total: 0 }
   }
+];
+
+// --- CALENDAR MOCK DATA ---
+export const EVENTS: CalendarEvent[] = [
+  { id: 'e1', title: 'Matematika Yakuniy Imtihoni', date: '2026-11-25', type: 'EXAM', time: '09:00', description: 'Algebra va Geometriya bo\'yicha' },
+  { id: 'e2', title: 'Mustaqillik Kuni', date: '2026-09-01', type: 'HOLIDAY', description: 'Dam olish kuni' },
+  { id: 'e3', title: 'Fizika Laboratoriya', date: '2026-11-20', type: 'EVENT', time: '14:00', description: 'Amaliy mashg\'ulot' },
+  { id: 'e4', title: 'Tarix Inshosi Topshirish', date: '2026-11-22', type: 'DEADLINE', time: '23:59', description: 'Rim imperiyasi mavzusi' },
+];
+
+// --- CHAT MOCK DATA ---
+export const CHAT_CONTACTS: ChatContact[] = [
+  { id: 'u2', name: 'Janob Smit', avatar: 'https://picsum.photos/id/102/100', lastMessage: 'Ertangi darsni unutmang!', lastMessageTime: '10:30', unreadCount: 2, isOnline: true, role: 'Teacher' },
+  { id: 'u5', name: 'Xonim Jonson', avatar: 'https://picsum.photos/id/105/100', lastMessage: 'Yaxshi natija, Aziza!', lastMessageTime: 'Kecha', unreadCount: 0, isOnline: false, role: 'Teacher' },
+  { id: 'u6', name: 'Bobur Quruvchi', avatar: 'https://picsum.photos/id/106/100', lastMessage: 'Vazifani tashlab berolasanmi?', lastMessageTime: 'Kecha', unreadCount: 0, isOnline: true, role: 'Student' },
+];
+
+export const CHAT_MESSAGES: ChatMessage[] = [
+  { id: 'm1', senderId: 'u2', receiverId: 'u1', content: 'Salom Aziza, ertaga qo\'shimcha dars bo\'ladi.', timestamp: '10:28', isRead: true },
+  { id: 'm2', senderId: 'u2', receiverId: 'u1', content: 'Ertangi darsni unutmang!', timestamp: '10:30', isRead: false },
+  { id: 'm3', senderId: 'u1', receiverId: 'u2', content: 'Rahmat ustoz, albatta boraman.', timestamp: '10:32', isRead: true },
 ];
 
 export const getSchoolStats = (schoolId: string): StatMetric[] => {
